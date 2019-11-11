@@ -9,13 +9,13 @@
   <body>
     <div id="basemap"></div>
     <div id="scroller">
-      <div class="animator step" data-step="0" style="padding-top: 30vh;"></div>
-      <div id="cover" class="step" data-step="1">
+      <div class="animator step" style="padding-top: 30vh;"></div>
+      <div id="cover" class="step">
         <div class="text title sticky">
           PUMA_Party:
         </div>
         <div class="text subtitle sticky">
-          Mapping the local economic impact of immigrants
+          Mapping the local economic impact of immigrants in the US
         </div>
         <div style="padding-top: 150vh;"></div>
         <div id="navguide" class="sticky">
@@ -23,8 +23,8 @@
             <p>Scroll for story</p>
             <div id="scroll-icon">
               <svg viewBox="0,0,100,80" preserveAspectRatio="xMidYMin meet">
-                <path d="M0 20 L50 60 L100 20" id="elem1"/>
-                <path d="M0 40 L50 80 L100 40" id="elem2"/>
+                <path d="M0 20 L50 60 L100 20" id="elem1" />
+                <path d="M0 40 L50 80 L100 40" id="elem2" />
               </svg>
             </div>
           </div>
@@ -32,16 +32,26 @@
             <p>Click for map</p>
             <div id="click-icon">
               <svg viewBox="0,0,100,100" preserveAspectRatio="xMidYMin meet">
-                  <circle cx="50" cy="45" r="39" id="elem1"/>
-                  <circle cx="50" cy="45" r="20" id="elem2"/>
+                <circle cx="50" cy="45" r="39" id="elem1" />
+                <circle cx="50" cy="45" r="20" id="elem2" />
               </svg>
             </div>
           </div>
+          <div></div>
           <div id="vline"></div>
         </div>
       </div>
-      <div id="intro" class="text" style="padding: 50vh 0;">
-        some intro text
+      <div id="offsetswitcher" class="step", style="height: 1px;">
+      <div id="intro" class="text" style="padding: 100vh 0;">
+        <div class="textbox text step">
+          We have constructed a metric that measures the impact immigrants have
+          on their local economies. It is composed of three key indicator values
+          for immigrants as a proportion of values for the local community (PUMA) they 
+          reside in: 
+          <span style="font-weight: bold;">tax contributions, entrepreneurship</span> 
+          and 
+          <span style="font-weight: bold;">participation in key industries</span>.
+        </div>
       </div>
     </div>
     <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>

@@ -79,7 +79,7 @@ body p {
   opacity: 0.8;
 }
 
-#map-container g path {
+#map-container g{
   stroke: rgb(236, 151, 136);
   stroke-width: 1px;
   fill-opacity: 0.2;
@@ -121,4 +121,11 @@ body p {
   0% {opacity: 1;}
   70% {opacity: 0.2;}
   100% {opacity: 1;}
+}
+
+.textbox{
+  padding: 2vmin;
+  background-color: rgb(255, 255, 255, 0.7);
+  border: solid 2px grey;
+  border-radius: 5px;
 }

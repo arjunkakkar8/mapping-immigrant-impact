@@ -1,4 +1,7 @@
-function setup() {
+const scroller = scrollama();
+var requestId = undefined;
+
+function init() {
   map = d3.select("#basemap");
   map
     .append("svg")
@@ -78,8 +81,8 @@ function setup() {
         var bbox = elem.node().getBBox();
         var xpos = bbox.x + bbox.width / 2;
         var ypos = bbox.y + bbox.height / 2;
-        var xtrans = truncateD(2000*Math.random()-xpos);
-        var ytrans = truncateD(1500*Math.random()-ypos);
+        var xtrans = truncateD(2000 * Math.random() - xpos);
+        var ytrans = truncateD(1500 * Math.random() - ypos);
         elem
           .attr("transform", "translate(" + xtrans + "," + ytrans + ")")
           .attr("origpos", "(" + truncateD(xpos) + "," + truncateD(ypos) + ")")
@@ -93,38 +96,30 @@ function setup() {
               ")"
           );
       });
+      var elements = document.querySelectorAll(".sticky");
+      Stickyfill.add(elements);
+
+      scroller
+        .setup({
+          step: ".step",
+          progress: true,
+          offset: 0,
+          order: true
+        })
+        .onStepEnter(response => {
+          if (response.index != 1) {
+            steps[response.index](response);
+          }
+        })
+        .onStepProgress(response => {
+          if (response.index == 1) {
+            steps[1](response.progress);
+          }
+        });
+
+      // setup resize event
+      window.addEventListener("resize", scroller.resize);
     });
-
-  var elements = document.querySelectorAll(".sticky");
-  Stickyfill.add(elements);
-}
-
-function init() {
-  setup();
-
-  // instantiate the scrollama
-  const scroller = scrollama();
-
-  // setup the instance, pass callback functions
-  scroller
-    .setup({
-      step: ".step",
-      progress: true,
-      offset: 0
-    })
-    .onStepEnter(response => {
-      if (response.index != 1) {
-        steps[response.index]();
-      }
-    })
-    .onStepProgress(response => {
-      if (response.index == 1) {
-        steps[1](response.progress);
-      }
-    });
-
-  // setup resize event
-  window.addEventListener("resize", scroller.resize);
 }
 
 init();
@@ -132,7 +127,7 @@ init();
 var steps = [
   function step0() {
     d3.select(".animator").classed("active", true);
-    requestAnimationFrame(function animate() {
+    requestId = requestAnimationFrame(function animate() {
       d3.selectAll(".state-container").each(function() {
         var prevTran = d3
           .select(this)
@@ -165,16 +160,16 @@ var steps = [
           )
         );
 
-        if (Number(prevTran[0])+Number(origPos[0]) > 2000) {
+        if (Number(prevTran[0]) + Number(origPos[0]) > 2000) {
           xvel = -Math.abs(xvel);
         }
-        if (Number(origPos[0])+Number(prevTran[0]) < 0) {
+        if (Number(origPos[0]) + Number(prevTran[0]) < 0) {
           xvel = Math.abs(xvel);
         }
-        if (Number(prevTran[1])+Number(origPos[1]) > 1500) {
+        if (Number(prevTran[1]) + Number(origPos[1]) > 1500) {
           yvel = -Math.abs(yvel);
         }
-        if (Number(prevTran[1])+Number(origPos[1]) < 0) {
+        if (Number(prevTran[1]) + Number(origPos[1]) < 0) {
           yvel = Math.abs(yvel);
         }
         var xtrans = truncateD(Number(prevTran[0]) + xvel);
@@ -184,14 +179,15 @@ var steps = [
           .attr("transform", "translate(" + xtrans + "," + ytrans + ")")
           .attr("prevtrans", "translate(" + xtrans + "," + ytrans + ")")
           .attr("prevvelocity", "(" + xvel + "," + yvel + ")");
-      });
 
+      });
       if (d3.select(".animator").classed("active")) {
         requestAnimationFrame(animate);
       }
     });
   },
   function step1(progress) {
+    cancelAnimationFrame(requestId);
     d3.select(".animator").classed("active", false);
     d3.selectAll("g.state-container").each(function(d, i) {
       var originalPos = d3
@@ -199,6 +195,7 @@ var steps = [
         .attr("prevtrans")
         .replace(/[^\d-,.]/g, "")
         .split(",");
+
       d3.select(this).attr(
         "transform",
         "translate(" +
@@ -208,6 +205,36 @@ var steps = [
           ")"
       );
     });
+  },
+  function step2(response) {
+    t = d3
+      .transition()
+      .duration(700)
+      .ease(d3.easeQuadInOut);
+
+    if (response.direction == "down") {
+      d3.selectAll("g.state-container path")
+        .transition(t)
+        .style("stroke", "white")
+        .style("fill", "grey");
+      scroller.offsetTrigger([0.5]);
+      scroller.resize();
+    } else if (response.direction == "up") {
+      d3.selectAll("g.state-container path")
+        .transition(t)
+        .style("stroke", "rgb(236, 151, 136)")
+        .style("fill", "red");
+      scroller.offsetTrigger([0]);
+      scroller.resize();
+    }
+  },
+  function step3(response) {
+    t = d3
+      .transition()
+      .duration(1000)
+      .ease(d3.easeQuadInOut);
+
+    console.log("trigger")
   }
 ];
 
