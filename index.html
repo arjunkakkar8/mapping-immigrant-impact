@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <title>Measuring Immigrant Economic Impact</title>
+    <title>Mapping Immigrant Economic Impact</title>
   </head>
   <body>
     <div id="basemap"></div>
@@ -12,15 +12,31 @@
       <div class="animator step" data-step="0" style="padding-top: 30vh;"></div>
       <div id="cover" class="step" data-step="1">
         <div class="text title sticky">
-          TITLE
+          PUMA_Party:
         </div>
         <div class="text subtitle sticky">
-          Mapping the economic impact of immigrants
+          Mapping the local economic impact of immigrants
         </div>
         <div style="padding-top: 150vh;"></div>
         <div id="navguide" class="sticky">
-          <div id="scroll-option" class="text">Scroll for story</div>
-          <div id="click-option" class="text">Click for map</div>
+          <div id="scroll-option" class="text">
+            <p>Scroll for story</p>
+            <div id="scroll-icon">
+              <svg viewBox="0,0,100,80" preserveAspectRatio="xMidYMin meet">
+                <path d="M0 20 L50 60 L100 20" id="elem1"/>
+                <path d="M0 40 L50 80 L100 40" id="elem2"/>
+              </svg>
+            </div>
+          </div>
+          <div id="click-option" class="text">
+            <p>Click for map</p>
+            <div id="click-icon">
+              <svg viewBox="0,0,100,100" preserveAspectRatio="xMidYMin meet">
+                  <circle cx="50" cy="45" r="39" id="elem1"/>
+                  <circle cx="50" cy="45" r="20" id="elem2"/>
+              </svg>
+            </div>
+          </div>
           <div id="vline"></div>
         </div>
       </div>
@@ -34,6 +50,5 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script type="text/javascript" src="js/stickyfill.min.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
-    <!--<script type="text/javascript" src="map_data.json"></script>-->
   </body>
 </html>
