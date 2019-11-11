@@ -11,7 +11,7 @@ function setup() {
     .append("g")
     .attr("id", "map-group");
 
-  d3.json("map_data.json")
+  d3.json("data/map_data.json")
     .then(
       function(map_data) {
         var subunits = topojson.feature(
@@ -86,9 +86,9 @@ function setup() {
           .attr(
             "origvelocity",
             "(" +
-              truncateD(0.5 * (Math.random() - 0.5)) +
+              truncateD(2*(Math.random() - 0.5)) +
               "," +
-              truncateD(0.5 * (Math.random() - 0.5)) +
+              truncateD(2*(Math.random() - 0.5)) +
               ")"
           );
       });
@@ -112,10 +112,15 @@ function init() {
       offset: 0
     })
     .onStepEnter(response => {
-      console.log(response.index);
+      if (response.index != 1) {
+        console.log(response.index)
+        steps[response.index]();
+      }
     })
     .onStepProgress(response => {
-      steps[response.index](response.progress);
+      if (response.index == 1) {
+        steps[1](response.progress);
+      }
     });
 
   // setup resize event
@@ -127,12 +132,8 @@ init();
 var steps = [
   function step0() {
     d3.select(".animator").classed("active", true);
-    let start = performance.now();
-    requestAnimationFrame(function animate(time) {
-      // timeFraction goes from 0 to 1
-      //let timeFraction = (time - start) / 10000;
-      //if (timeFraction > 1) timeFraction = 1;
-
+    console.log("trigger");
+    requestAnimationFrame(function animate() {
       d3.selectAll(".state-container").each(function() {
         var originalPos = d3
           .select(this)
