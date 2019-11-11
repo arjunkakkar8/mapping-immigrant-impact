@@ -80,7 +80,7 @@ body {
 }
 
 #map-container g path {
-  stroke: grey;
+  stroke: rgb(236, 151, 136);
   stroke-width: 1px;
   fill-opacity: 0.2;
   fill: red;

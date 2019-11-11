@@ -78,17 +78,18 @@ function setup() {
         var bbox = elem.node().getBBox();
         var xpos = bbox.x + bbox.width / 2;
         var ypos = bbox.y + bbox.height / 2;
-        var xtrans = 2 * truncateD(xpos - 1000);
-        var ytrans = 2 * truncateD(ypos - 700);
+        var xtrans = truncateD(2000*Math.random()-xpos);
+        var ytrans = truncateD(1500*Math.random()-ypos);
         elem
           .attr("transform", "translate(" + xtrans + "," + ytrans + ")")
-          .attr("origtrans", "translate(" + xtrans + "," + ytrans + ")")
+          .attr("origpos", "(" + truncateD(xpos) + "," + truncateD(ypos) + ")")
+          .attr("prevtrans", "translate(" + xtrans + "," + ytrans + ")")
           .attr(
-            "origvelocity",
+            "prevvelocity",
             "(" +
-              truncateD(2*(Math.random() - 0.5)) +
+              truncateD(3 * (Math.random() - 0.5)) +
               "," +
-              truncateD(2*(Math.random() - 0.5)) +
+              truncateD(3 * (Math.random() - 0.5)) +
               ")"
           );
       });
@@ -113,7 +114,6 @@ function init() {
     })
     .onStepEnter(response => {
       if (response.index != 1) {
-        console.log(response.index)
         steps[response.index]();
       }
     })
@@ -132,41 +132,58 @@ init();
 var steps = [
   function step0() {
     d3.select(".animator").classed("active", true);
-    console.log("trigger");
     requestAnimationFrame(function animate() {
       d3.selectAll(".state-container").each(function() {
-        var originalPos = d3
+        var prevTran = d3
           .select(this)
-          .attr("origtrans")
+          .attr("prevtrans")
           .replace(/[^\d-,.]/g, "")
           .split(",");
 
         var velocity = d3
           .select(this)
-          .attr("origvelocity")
+          .attr("prevvelocity")
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+
+        var origPos = d3
+          .select(this)
+          .attr("origpos")
           .replace(/[^\d-,.]/g, "")
           .split(",");
 
         var xvel = truncateD(
           Math.max(
-            Math.min(Number(velocity[0]) + 0.05 * (Math.random() - 0.5), 1),
-            -1
+            Math.min(Number(velocity[0]) + 0.5 * (Math.random() - 0.5), 3),
+            -3
           )
         );
         var yvel = truncateD(
           Math.max(
-            Math.min(Number(velocity[1]) + 0.05 * (Math.random() - 0.5), 1),
-            -1
+            Math.min(Number(velocity[1]) + 0.5 * (Math.random() - 0.5), 3),
+            -3
           )
         );
-        var xtrans = truncateD(Number(originalPos[0]) + xvel);
-        var ytrans = truncateD(Number(originalPos[1]) + yvel);
-        xtrans = truncateD(xtrans / 2000) != 0 ? xtrans % 2000 : xtrans;
-        ytrans = truncateD(ytrans / 1500) != 0 ? ytrans % 1500 : ytrans;
+
+        if (Number(prevTran[0])+Number(origPos[0]) > 2000) {
+          xvel = -Math.abs(xvel);
+        }
+        if (Number(origPos[0])+Number(prevTran[0]) < 0) {
+          xvel = Math.abs(xvel);
+        }
+        if (Number(prevTran[1])+Number(origPos[1]) > 1500) {
+          yvel = -Math.abs(yvel);
+        }
+        if (Number(prevTran[1])+Number(origPos[1]) < 0) {
+          yvel = Math.abs(yvel);
+        }
+        var xtrans = truncateD(Number(prevTran[0]) + xvel);
+        var ytrans = truncateD(Number(prevTran[1]) + yvel);
+
         d3.select(this)
           .attr("transform", "translate(" + xtrans + "," + ytrans + ")")
-          .attr("origtrans", "translate(" + xtrans + "," + ytrans + ")")
-          .attr("origvelocity", "(" + xvel + "," + yvel + ")");
+          .attr("prevtrans", "translate(" + xtrans + "," + ytrans + ")")
+          .attr("prevvelocity", "(" + xvel + "," + yvel + ")");
       });
 
       if (d3.select(".animator").classed("active")) {
@@ -179,7 +196,7 @@ var steps = [
     d3.selectAll("g.state-container").each(function(d, i) {
       var originalPos = d3
         .select(this)
-        .attr("origtrans")
+        .attr("prevtrans")
         .replace(/[^\d-,.]/g, "")
         .split(",");
       d3.select(this).attr(
