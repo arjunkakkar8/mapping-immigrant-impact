@@ -1,0 +1,93 @@
+body {
+  margin: 0;
+}
+
+#basemap {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  padding: 0;
+}
+
+#scroller {
+  width: 60%;
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  padding: 0 20%;
+}
+
+.text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 20px;
+  color: grey;
+}
+
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
+
+.title {
+  font-size: 5vmin;
+  top: 5vh;
+  padding-bottom: 20vh;
+}
+
+.subtitle {
+  font-size: 4vmin;
+  top: 5vh;
+  padding-top: 10vh;
+  padding-bottom: 8vh;
+}
+
+.title,
+.subtitle {
+  text-align: center;
+}
+
+#cover {
+  height: 250vh;
+}
+
+#navguide {
+  top: 85vh;
+  width: 100%;
+}
+
+#scroll-option {
+  width: 50%;
+  text-align: center;
+}
+
+#click-option {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  text-align: center;
+}
+
+#vline {
+  border-left: 2px solid grey;
+  height: 50px;
+  position: absolute;
+  left: 50%;
+  margin-left: -1px;
+  top: 0;
+  opacity: 0.8;
+}
+
+#map-container g path {
+  stroke: grey;
+  stroke-width: 1px;
+  fill-opacity: 0.2;
+  fill: red;
+}
+
+
+#intro {
+  top: 50px;
+  position: relative;
+}
