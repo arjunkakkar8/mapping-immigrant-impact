@@ -44,7 +44,7 @@ function init() {
               var pathel = groupel.appendChild(document.createElement("path"));
             }
             pathel.setAttribute("d", path(element));
-            pathel.setAttribute("geoid", element.properties.GEOID);
+            pathel.setAttribute("id", element.properties.GEOID);
           } else {
             if ((cname == "AlaskaGroup") | (cname == "HawaiiGroup")) {
               var pathel = document
@@ -56,7 +56,7 @@ function init() {
                 .appendChild(document.createElement("path"));
             }
             pathel.setAttribute("d", path(element));
-            pathel.setAttribute("geoid", element.properties.GEOID);
+            pathel.setAttribute("id", element.properties.GEOID);
           }
         });
         document.getElementById("map-group").innerHTML += "";
@@ -96,6 +96,15 @@ function init() {
               ")"
           );
       });
+
+      d3.json("data/score_data.json").then(function(score_data) {
+        d3.select("#map-container")
+          .selectAll("path")
+          .data(score_data, function(d, i) {
+            return d ? d.GEOID : this.id;
+          });
+      });
+
       var elements = document.querySelectorAll(".sticky");
       Stickyfill.add(elements);
 
@@ -119,6 +128,7 @@ function init() {
 
       // setup resize event
       window.addEventListener("resize", scroller.resize);
+      steps[0]();
     });
 }
 
@@ -179,7 +189,6 @@ var steps = [
           .attr("transform", "translate(" + xtrans + "," + ytrans + ")")
           .attr("prevtrans", "translate(" + xtrans + "," + ytrans + ")")
           .attr("prevvelocity", "(" + xvel + "," + yvel + ")");
-
       });
       if (d3.select(".animator").classed("active")) {
         requestAnimationFrame(animate);
@@ -222,7 +231,7 @@ var steps = [
     } else if (response.direction == "up") {
       d3.selectAll("g.state-container path")
         .transition(t)
-        .style("stroke", "rgb(236, 151, 136)")
+        .style("stroke", "rgb(231, 157, 157)")
         .style("fill", "red");
       scroller.offsetTrigger([0]);
       scroller.resize();
@@ -234,7 +243,7 @@ var steps = [
       .duration(1000)
       .ease(d3.easeQuadInOut);
 
-    console.log("trigger")
+    console.log("trigger");
   }
 ];
 
