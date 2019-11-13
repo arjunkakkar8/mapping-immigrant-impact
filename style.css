@@ -79,13 +79,12 @@ body p {
   opacity: 0.8;
 }
 
-#map-container g{
-  stroke: rgb(231, 157, 157);
+#map-container g path{
+  stroke: rgb(185, 202, 146);
   stroke-width: 1px;
   fill-opacity: 0.2;
-  fill: red;
+  fill: rgb(185, 202, 146);
 }
-
 
 #intro {
   top: 50px;
@@ -128,4 +127,8 @@ body p {
   background-color: rgb(255, 255, 255, 0.7);
   border: solid 2px grey;
   border-radius: 5px;
+}
+
+.spacer{
+  height: 100vh;
 }

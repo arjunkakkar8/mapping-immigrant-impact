@@ -1,5 +1,13 @@
 const scroller = scrollama();
-var requestId = undefined;
+var pathels;
+var mapcolors = d3
+  .scaleLinear()
+  .domain([0.5, 1, 2])
+  .range(["rgb(255, 199, 14)", "rgb(185, 202, 146)", "rgb(0, 117, 137)"]);
+var hotspotcolors = d3
+  .scaleLinear()
+  .domain([-1.5, 0, 1.5])
+  .range(["rgb(255, 199, 14)", "rgb(185, 202, 146)", "rgb(0, 117, 137)"]);
 
 function init() {
   map = d3.select("#basemap");
@@ -95,19 +103,20 @@ function init() {
               truncateD(3 * (Math.random() - 0.5)) +
               ")"
           );
+        pathels = d3.selectAll("g.state-container path");
       });
 
       d3.json("data/score_data.json").then(function(score_data) {
-        d3.select("#map-container")
-          .selectAll("path")
-          .data(score_data, function(d, i) {
-            return d ? d.GEOID : this.id;
-          });
+        pathels.data(score_data, function(d, i) {
+          return d ? d.GEOID : this.id;
+        });
       });
+
+      var progressSteps = [1, 3, 4];
 
       var elements = document.querySelectorAll(".sticky");
       Stickyfill.add(elements);
-
+      steps[0]();
       scroller
         .setup({
           step: ".step",
@@ -116,19 +125,18 @@ function init() {
           order: true
         })
         .onStepEnter(response => {
-          if (response.index != 1) {
+          if (!progressSteps.includes(response.index)) {
             steps[response.index](response);
           }
         })
         .onStepProgress(response => {
-          if (response.index == 1) {
-            steps[1](response.progress);
+          if (progressSteps.includes(response.index)) {
+            steps[response.index](response.progress);
           }
         });
 
       // setup resize event
       window.addEventListener("resize", scroller.resize);
-      steps[0]();
     });
 }
 
@@ -137,7 +145,7 @@ init();
 var steps = [
   function step0() {
     d3.select(".animator").classed("active", true);
-    requestId = requestAnimationFrame(function animate() {
+    requestAnimationFrame(function animate() {
       d3.selectAll(".state-container").each(function() {
         var prevTran = d3
           .select(this)
@@ -190,13 +198,17 @@ var steps = [
           .attr("prevtrans", "translate(" + xtrans + "," + ytrans + ")")
           .attr("prevvelocity", "(" + xvel + "," + yvel + ")");
       });
+
       if (d3.select(".animator").classed("active")) {
         requestAnimationFrame(animate);
       }
     });
   },
   function step1(progress) {
-    cancelAnimationFrame(requestId);
+    var id = window.requestAnimationFrame(function() {});
+    while (id--) {
+      window.cancelAnimationFrame(id);
+    }
     d3.select(".animator").classed("active", false);
     d3.selectAll("g.state-container").each(function(d, i) {
       var originalPos = d3
@@ -216,34 +228,60 @@ var steps = [
     });
   },
   function step2(response) {
-    t = d3
-      .transition()
-      .duration(700)
-      .ease(d3.easeQuadInOut);
-
     if (response.direction == "down") {
-      d3.selectAll("g.state-container path")
-        .transition(t)
-        .style("stroke", "white")
-        .style("fill", "grey");
       scroller.offsetTrigger([0.5]);
       scroller.resize();
     } else if (response.direction == "up") {
-      d3.selectAll("g.state-container path")
-        .transition(t)
-        .style("stroke", "rgb(231, 157, 157)")
-        .style("fill", "red");
       scroller.offsetTrigger([0]);
       scroller.resize();
     }
   },
-  function step3(response) {
-    t = d3
-      .transition()
-      .duration(1000)
-      .ease(d3.easeQuadInOut);
-
-    console.log("trigger");
+  function step3(progress) {
+    pathels
+      .style(
+        "stroke",
+        "rgb(" +
+          (progress * 128 + (1 - progress) * 185) +
+          "," +
+          (progress * 128 + (1 - progress) * 202) +
+          "," +
+          (progress * 128 + (1 - progress) * 146) +
+          ")"
+      )
+      .style("fill", d => {
+        fillVals = mapcolors(d.score_2012)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        return (
+          "rgb(" +
+          (progress * fillVals[0] + (1 - progress) * 185) +
+          "," +
+          (progress * fillVals[1] + (1 - progress) * 202) +
+          "," +
+          (progress * fillVals[2] + (1 - progress) * 146) +
+          ")"
+        );
+      })
+      .style("fill-opacity", 0.6 * progress + 0.2 * (1 - progress));
+  },
+  function step4(progress) {
+    pathels.style("fill", d => {
+      oldVals = mapcolors(d.score_2012)
+        .replace(/[^\d-,.]/g, "")
+        .split(",");
+      newVals = hotspotcolors(d.score_2012_g)
+        .replace(/[^\d-,.]/g, "")
+        .split(",");
+      return (
+        "rgb(" +
+        (progress * newVals[0] + (1 - progress) * oldVals[0]) +
+        "," +
+        (progress * newVals[1] + (1 - progress) * oldVals[1]) +
+        "," +
+        (progress * newVals[2] + (1 - progress) * oldVals[2]) +
+        ")"
+      );
+    });
   }
 ];
 
