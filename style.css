@@ -14,9 +14,10 @@ body p {
 #scroller {
   width: 60%;
   position: absolute;
+  left: 0;
   z-index: 10;
   top: 0;
-  padding: 0 19%;
+  padding: 0 20%;
 }
 
 .text {
@@ -79,7 +80,7 @@ body p {
   opacity: 0.8;
 }
 
-#map-container g path{
+#map-group g path{
   stroke: rgb(185, 202, 146);
   stroke-width: 1px;
   fill-opacity: 0.2;

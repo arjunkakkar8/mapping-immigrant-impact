@@ -113,6 +113,7 @@ function init() {
       });
 
       createColorGuide();
+      createTimeline();
 
       var progressSteps = [1, 3, 4, 5];
 
@@ -289,8 +290,156 @@ var steps = [
     d3.select("#scaleLabels1").style("opacity", 1 - progress);
     d3.select("#scaleLabels2").style("opacity", progress);
   },
-  function step5(progress){
+  function step5(progress) {
+    if (progress < 0.05) {
+      d3.select("#timeline-group").style("opacity", 20 * progress);
+    } else {
+      d3.select("#timeline-group").style("opacity", 1);
+      d3.select("#slider").attr(
+        "transform",
+        "translate(0," + (-973 * (progress - 0.05)) / 0.95 + ")"
+      );
+    }
 
+    if ((progress > 0.05) & (progress < 0.24)) {
+      pathels.style("fill", d => {
+        oldVals = hotspotcolors(d.score_2012_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        newVals = hotspotcolors(d.score_2013_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        return (
+          "rgb(" +
+          truncateD(
+            ((progress - 0.05) * newVals[0] + (0.24 - progress) * oldVals[0]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.05) * newVals[1] + (0.24 - progress) * oldVals[1]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.05) * newVals[2] + (0.24 - progress) * oldVals[2]) /
+              0.19
+          ) +
+          ")"
+        );
+      });
+    } else if ((progress > 0.24) & (progress < 0.43)) {
+      pathels.style("fill", d => {
+        oldVals = hotspotcolors(d.score_2013_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        newVals = hotspotcolors(d.score_2014_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        return (
+          "rgb(" +
+          truncateD(
+            ((progress - 0.24) * newVals[0] + (0.43 - progress) * oldVals[0]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.24) * newVals[1] + (0.43 - progress) * oldVals[1]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.24) * newVals[2] + (0.43 - progress) * oldVals[2]) /
+              0.19
+          ) +
+          ")"
+        );
+      });
+    } else if ((progress > 0.43) & (progress < 0.62)) {
+      pathels.style("fill", d => {
+        oldVals = hotspotcolors(d.score_2014_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        newVals = hotspotcolors(d.score_2015_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        return (
+          "rgb(" +
+          truncateD(
+            ((progress - 0.43) * newVals[0] + (0.62 - progress) * oldVals[0]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.43) * newVals[1] + (0.62 - progress) * oldVals[1]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.43) * newVals[2] + (0.62 - progress) * oldVals[2]) /
+              0.19
+          ) +
+          ")"
+        );
+      });
+    } else if ((progress > 0.62) & (progress < 0.81)) {
+      pathels.style("fill", d => {
+        oldVals = hotspotcolors(d.score_2015_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        newVals = hotspotcolors(d.score_2016_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        return (
+          "rgb(" +
+          truncateD(
+            ((progress - 0.62) * newVals[0] + (0.81 - progress) * oldVals[0]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.62) * newVals[1] + (0.81 - progress) * oldVals[1]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.62) * newVals[2] + (0.81 - progress) * oldVals[2]) /
+              0.19
+          ) +
+          ")"
+        );
+      });
+    } else if ((progress > 0.81) & (progress < 1)) {
+      pathels.style("fill", d => {
+        oldVals = hotspotcolors(d.score_2016_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        newVals = hotspotcolors(d.score_2017_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        return (
+          "rgb(" +
+          truncateD(
+            ((progress - 0.81) * newVals[0] + (1 - progress) * oldVals[0]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.81) * newVals[1] + (1 - progress) * oldVals[1]) /
+              0.19
+          ) +
+          "," +
+          truncateD(
+            ((progress - 0.81) * newVals[2] + (1 - progress) * oldVals[2]) /
+              0.19
+          ) +
+          ")"
+        );
+      });
+    } 
+  },
+  function step6() {
+    
   }
 ];
 
@@ -340,18 +489,21 @@ function createColorGuide() {
     .attr("x", 0)
     .attr("y", 40)
     .style("font-size", "30px")
+    .style("fill", "grey")
     .html("Over");
   labels1
     .append("text")
     .attr("x", 0)
     .attr("y", 60)
     .style("font-size", "25px")
+    .style("fill", "grey")
     .html("Contributing");
   labels1
     .append("text")
     .attr("x", 0)
     .attr("y", 80)
     .style("font-size", "25px")
+    .style("fill", "grey")
     .html("Regions");
 
   labels1
@@ -359,18 +511,21 @@ function createColorGuide() {
     .attr("x", 0)
     .attr("y", 940)
     .style("font-size", "30px")
+    .style("fill", "grey")
     .html("Under");
   labels1
     .append("text")
     .attr("x", 0)
     .attr("y", 960)
     .style("font-size", "25px")
+    .style("fill", "grey")
     .html("Contributing");
   labels1
     .append("text")
     .attr("x", 0)
     .attr("y", 980)
     .style("font-size", "25px")
+    .style("fill", "grey")
     .html("Regions");
 
   labels2 = colorGuide
@@ -384,18 +539,21 @@ function createColorGuide() {
     .attr("x", 0)
     .attr("y", 40)
     .style("font-size", "30px")
+    .style("fill", "grey")
     .html("Over");
   labels2
     .append("text")
     .attr("x", 0)
     .attr("y", 60)
     .style("font-size", "25px")
+    .style("fill", "grey")
     .html("Contributing");
   labels2
     .append("text")
     .attr("x", 0)
     .attr("y", 80)
     .style("font-size", "25px")
+    .style("fill", "grey")
     .html("Hotspots");
 
   labels2
@@ -403,19 +561,98 @@ function createColorGuide() {
     .attr("x", 0)
     .attr("y", 940)
     .style("font-size", "30px")
+    .style("fill", "grey")
     .html("Under");
   labels2
     .append("text")
     .attr("x", 0)
     .attr("y", 960)
     .style("font-size", "25px")
+    .style("fill", "grey")
     .html("Contributing");
   labels2
     .append("text")
     .attr("x", 0)
     .attr("y", 980)
+    .style("fill", "grey")
     .style("font-size", "25px")
     .html("Hotspots");
+}
+
+function createTimeline() {
+  timelineGroup = d3
+    .select("#map-container")
+    .append("g")
+    .attr("id", "timeline-group")
+    .style("opacity", 0);
+
+  timeline = timelineGroup
+    .append("svg")
+    .attr("id", "timeline")
+    .attr("x", 1775)
+    .attr("y", 250)
+    .attr("height", 1000)
+    .attr("width", 200)
+    .attr("viewBox", "0, 0, 200, 1000")
+    .attr("preserveAspectRatio", "xMidYMid meet");
+
+  years = [2017, 2016, 2015, 2014, 2013, 2012];
+  for (var i = 0; i < years.length; i++) {
+    timeline
+      .append("text")
+      .attr("class", "text")
+      .style("font-size", 30)
+      .style("fill", "grey")
+      .attr("x", 65)
+      .attr("y", 20 + truncateD((i * 975) / 5))
+      .html(years[i]);
+
+    if (i != 5) {
+      timeline
+        .append("rect")
+        .attr("fill", "grey")
+        .attr("x", 90)
+        .attr("y", 58.75 + truncateD((i * 975) / 5))
+        .attr("width", 20)
+        .attr("height", 2);
+
+      timeline
+        .append("rect")
+        .attr("fill", "grey")
+        .attr("x", 80)
+        .attr("y", 107.5 + truncateD((i * 975) / 5))
+        .attr("width", 40)
+        .attr("height", 2);
+
+      timeline
+        .append("rect")
+        .attr("fill", "grey")
+        .attr("x", 90)
+        .attr("y", 156.25 + truncateD((i * 975) / 5))
+        .attr("width", 20)
+        .attr("height", 2);
+    }
+  }
+
+  slider = timeline.append("g").attr("id", "slider");
+
+  slider
+    .append("path")
+    .attr("d", "M60 985 L145 985")
+    .attr("stroke", "grey")
+    .attr("stroke-width", "2");
+
+  slider
+    .append("path")
+    .attr("d", "M60 985 L40 970 L40 1000")
+    .attr("stroke", "grey")
+    .attr("fill", "grey");
+
+  slider
+    .append("path")
+    .attr("d", "M145 985 L165 970 L165 1000")
+    .attr("stroke", "grey")
+    .attr("fill", "grey");
 }
 
 function truncateD(number) {
