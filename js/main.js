@@ -1,5 +1,5 @@
 const scroller = scrollama();
-var pathels;
+var colorGuide, pathels;
 var mapcolors = d3
   .scaleLinear()
   .domain([0.5, 1, 2])
@@ -76,7 +76,7 @@ function init() {
     .then(() => {
       d3.select("g.AlaskaGroupSizer").attr(
         "transform",
-        "translate(400, 1200) scale(0.4) rotate(-30)"
+        "translate(500, 1250) scale(0.4) rotate(-30)"
       );
 
       d3.select("g.HawaiiGroupSizer").attr(
@@ -112,7 +112,9 @@ function init() {
         });
       });
 
-      var progressSteps = [1, 3, 4];
+      createColorGuide();
+
+      var progressSteps = [1, 3, 4, 5];
 
       var elements = document.querySelectorAll(".sticky");
       Stickyfill.add(elements);
@@ -263,6 +265,8 @@ var steps = [
         );
       })
       .style("fill-opacity", 0.6 * progress + 0.2 * (1 - progress));
+
+    colorGuideGroup.style("opacity", progress);
   },
   function step4(progress) {
     pathels.style("fill", d => {
@@ -282,10 +286,139 @@ var steps = [
         ")"
       );
     });
+    d3.select("#scaleLabels1").style("opacity", 1 - progress);
+    d3.select("#scaleLabels2").style("opacity", progress);
+  },
+  function step5(progress){
+
   }
 ];
 
-truncateD = function(number) {
+function createColorGuide() {
+  colorGuideGroup = d3
+    .select("#map-container")
+    .append("g")
+    .attr("id", "color-guide-group")
+    .style("opacity", 0);
+
+  colorGuide = colorGuideGroup
+    .append("svg")
+    .attr("id", "color-scale")
+    .attr("x", 25)
+    .attr("y", 250)
+    .attr("height", 1000)
+    .attr("width", 200)
+    .attr("viewBox", "0, 0, 200, 1000")
+    .attr("preserveAspectRatio", "xMidYMid meet");
+
+  colorGuide.html(
+    "<defs><linearGradient id='gradient' x1='0' x2='0' y1='0' y2='1'>" +
+      "<stop offset='10%' stop-color='rgb(0, 117, 137)'/>" +
+      "<stop offset='50%' stop-color='rgb(185, 202, 146)'/>" +
+      "<stop offset='90%' stop-color='rgb(255, 199, 14)'/>" +
+      "</linearGradient></defs>"
+  );
+  colorGuide
+    .append("rect")
+    .attr("x", 50)
+    .attr("y", 125)
+    .attr("rx", 10)
+    .attr("ry", 10)
+    .attr("width", 20)
+    .attr("height", 750)
+    .attr("fill", "url(#gradient)")
+    .attr("stroke", "grey");
+
+  labels1 = colorGuide
+    .append("g")
+    .attr("id", "scaleLabels1")
+    .attr("class", "text")
+    .style("opacity", 1);
+
+  labels1
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 40)
+    .style("font-size", "30px")
+    .html("Over");
+  labels1
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 60)
+    .style("font-size", "25px")
+    .html("Contributing");
+  labels1
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 80)
+    .style("font-size", "25px")
+    .html("Regions");
+
+  labels1
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 940)
+    .style("font-size", "30px")
+    .html("Under");
+  labels1
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 960)
+    .style("font-size", "25px")
+    .html("Contributing");
+  labels1
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 980)
+    .style("font-size", "25px")
+    .html("Regions");
+
+  labels2 = colorGuide
+    .append("g")
+    .attr("id", "scaleLabels2")
+    .attr("class", "text")
+    .style("opacity", 0);
+
+  labels2
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 40)
+    .style("font-size", "30px")
+    .html("Over");
+  labels2
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 60)
+    .style("font-size", "25px")
+    .html("Contributing");
+  labels2
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 80)
+    .style("font-size", "25px")
+    .html("Hotspots");
+
+  labels2
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 940)
+    .style("font-size", "30px")
+    .html("Under");
+  labels2
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 960)
+    .style("font-size", "25px")
+    .html("Contributing");
+  labels2
+    .append("text")
+    .attr("x", 0)
+    .attr("y", 980)
+    .style("font-size", "25px")
+    .html("Hotspots");
+}
+
+function truncateD(number) {
   num = number * 1000;
   return Math[num < 0 ? "ceil" : "floor"](num) / 1000;
-};
+}
