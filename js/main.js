@@ -1,5 +1,5 @@
 const scroller = scrollama();
-var colorGuide, pathels;
+var colorGuide, pathels, statels;
 var mapcolors = d3
   .scaleLinear()
   .domain([0.5, 1, 2])
@@ -37,11 +37,11 @@ function init() {
 
         subunits.features.forEach(element => {
           cname = element.properties.State.replace(/\s/g, "") + "Group";
-          if (document.getElementsByClassName(cname).length == 0) {
+          if (document.getElementById(cname) == null) {
             var groupel = document
               .getElementById("map-group")
               .appendChild(document.createElement("g"));
-            groupel.classList.add(cname);
+            groupel.id = cname;
             groupel.classList.add("state-container");
 
             if ((cname == "AlaskaGroup") | (cname == "HawaiiGroup")) {
@@ -60,7 +60,7 @@ function init() {
                 .appendChild(document.createElement("path"));
             } else {
               var pathel = document
-                .getElementsByClassName(cname)[0]
+                .getElementById(cname)
                 .appendChild(document.createElement("path"));
             }
             pathel.setAttribute("d", path(element));
@@ -104,42 +104,51 @@ function init() {
               ")"
           );
         pathels = d3.selectAll("g.state-container path");
+        statels = d3.selectAll(".state-container");
       });
 
       d3.json("data/score_data.json").then(function(score_data) {
         pathels.data(score_data, function(d, i) {
           return d ? d.GEOID : this.id;
         });
-      });
 
-      createColorGuide();
-      createTimeline();
+        d3.json("data/state_immigcounts.json").then(function(immig_count) {
+          statels.data(immig_count, function(d, i) {
+            return d
+              ? d.State.replace(/\s/g, "")
+              : this.id.replace(/Group/g, "");
+          });
 
-      var progressSteps = [1, 3, 4, 5];
+          createColorGuide();
+          createTimeline();
 
-      var elements = document.querySelectorAll(".sticky");
-      Stickyfill.add(elements);
-      steps[0]();
-      scroller
-        .setup({
-          step: ".step",
-          progress: true,
-          offset: 0,
-          order: true
-        })
-        .onStepEnter(response => {
-          if (!progressSteps.includes(response.index)) {
-            steps[response.index](response);
-          }
-        })
-        .onStepProgress(response => {
-          if (progressSteps.includes(response.index)) {
-            steps[response.index](response.progress);
-          }
+          var progressSteps = [1, 3, 4, 5, 6];
+
+          var elements = document.querySelectorAll(".sticky");
+          Stickyfill.add(elements);
+          steps[0]();
+          scroller
+            .setup({
+              step: ".step",
+              progress: true,
+              offset: 0,
+              order: true
+            })
+            .onStepEnter(response => {
+              if (!progressSteps.includes(response.index)) {
+                steps[response.index](response);
+              }
+            })
+            .onStepProgress(response => {
+              if (progressSteps.includes(response.index)) {
+                steps[response.index](response.progress);
+              }
+            });
+
+          // setup resize event
+          window.addEventListener("resize", scroller.resize);
         });
-
-      // setup resize event
-      window.addEventListener("resize", scroller.resize);
+      });
     });
 }
 
@@ -290,9 +299,33 @@ var steps = [
     d3.select("#scaleLabels1").style("opacity", 1 - progress);
     d3.select("#scaleLabels2").style("opacity", progress);
   },
-  function step5(progress) {
-    if (progress < 0.05) {
-      d3.select("#timeline-group").style("opacity", 20 * progress);
+  function step5(progress){
+    statels.each(function(d) {
+      elem = d3.select(this);
+      scaler =
+        (4*progress*(1-progress) * truncateD(d.immigcount_2017) + (1-4*progress*(1-progress)));
+      coords = elem
+        .attr("origpos")
+        .replace(/[^\d-,.]/g, "")
+        .split(",");
+
+      elem.attr(
+        "transform",
+        "translate(" +
+          (1 - scaler) * coords[0] +
+          "," +
+          (1 - scaler) * coords[1] +
+          ") scale(" +
+          scaler +
+          ")"
+      );
+    });
+  },
+  function step6(progress) {
+    if (progress < 0.01) {
+      d3.select("#timeline-group").style("opacity", 0);
+    } else if (progress < 0.05) {
+      d3.select("#timeline-group").style("opacity", 25 * progress);
     } else {
       d3.select("#timeline-group").style("opacity", 1);
       d3.select("#slider").attr(
@@ -328,6 +361,7 @@ var steps = [
           ")"
         );
       });
+      
     } else if ((progress > 0.24) & (progress < 0.43)) {
       pathels.style("fill", d => {
         oldVals = hotspotcolors(d.score_2013_g)
@@ -436,10 +470,9 @@ var steps = [
           ")"
         );
       });
-    } 
+    }
   },
-  function step6() {
-    
+  function step7() {
   }
 ];
 
