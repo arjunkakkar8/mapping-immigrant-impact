@@ -125,9 +125,9 @@ function init() {
           .attr(
             "prevvelocity",
             "(" +
-              truncateD(3 * (Math.random() - 0.5)) +
+              truncateD(2 * (Math.random() - 0.5)) +
               "," +
-              truncateD(3 * (Math.random() - 0.5)) +
+              truncateD(2 * (Math.random() - 0.5)) +
               ")"
           );
         pathels = d3.selectAll("g.state-container path");
@@ -208,14 +208,14 @@ var steps = [
 
         var xvel = truncateD(
           Math.max(
-            Math.min(Number(velocity[0]) + 0.5 * (Math.random() - 0.5), 3),
-            -3
+            Math.min(Number(velocity[0]) + 0.2 * (Math.random() - 0.5), 1),
+            -1
           )
         );
         var yvel = truncateD(
           Math.max(
-            Math.min(Number(velocity[1]) + 0.5 * (Math.random() - 0.5), 3),
-            -3
+            Math.min(Number(velocity[1]) + 0.2 * (Math.random() - 0.5), 1),
+            -1
           )
         );
 
@@ -545,7 +545,7 @@ function addDotLabels() {
     .append("text")
     .attr("id", "under-num")
     .attr("class", "text")
-    .attr("x", 500)
+    .attr("x", 450)
     .attr("y", 1320)
     .style("font-size", "45px")
     .style("fill", "grey")
@@ -553,23 +553,25 @@ function addDotLabels() {
   container
     .append("text")
     .attr("class", "text")
-    .attr("x", 500)
-    .attr("y", 1350)
+    .attr("x", 450)
+    .attr("y", 1360)
     .style("fill", "grey")
+    .style("font-size", "25px")
     .html("PUMAs with immigrants");
   container
     .append("text")
     .attr("class", "text")
-    .attr("x", 500)
-    .attr("y", 1370)
+    .attr("x", 450)
+    .attr("y", 1390)
     .style("fill", "grey")
+    .style("font-size", "25px")
     .html("under-contributing");
 
   container
     .append("text")
     .attr("id", "over-num")
     .attr("class", "text")
-    .attr("x", 1500)
+    .attr("x", 1550)
     .attr("y", 1320)
     .attr("text-anchor", "end")
     .style("font-size", "45px")
@@ -578,17 +580,19 @@ function addDotLabels() {
   container
     .append("text")
     .attr("class", "text")
-    .attr("x", 1500)
-    .attr("y", 1350)
+    .attr("x", 1550)
+    .attr("y", 1360)
     .attr("text-anchor", "end")
+    .style("font-size", "25px")
     .style("fill", "grey")
     .html("PUMAs with immigrants");
   container
     .append("text")
     .attr("class", "text")
-    .attr("x", 1500)
-    .attr("y", 1370)
+    .attr("x", 1550)
+    .attr("y", 1390)
     .attr("text-anchor", "end")
+    .style("font-size", "25px")
     .style("fill", "grey")
     .html("over-contributing");
 }
@@ -695,24 +699,30 @@ function createDotPlot(step) {
     .duration(1000)
     .tween("text", function() {
       var selection = d3.select(this);
-      var start = d3.select(this).text().replace(/[^\d-,.]/g, "");
+      var start = d3
+        .select(this)
+        .text()
+        .replace(/[^\d-,.]/g, "");
       var end = simNodes.filter(n => n[scoreSel] < 1).length / 23.51;
       var interpolator = d3.interpolateNumber(start, end);
       return function(t) {
-        selection.text(Math.round(interpolator(t)) + "%");
+        selection.text(truncateD(interpolator(t), 2) + "%");
       };
     });
 
-    d3.select("#over-num")
+  d3.select("#over-num")
     .transition()
     .duration(1000)
     .tween("text", function() {
       var selection = d3.select(this);
-      var start = d3.select(this).text().replace(/[^\d-,.]/g, "");
+      var start = d3
+        .select(this)
+        .text()
+        .replace(/[^\d-,.]/g, "");
       var end = simNodes.filter(n => n[scoreSel] > 1).length / 23.51;
       var interpolator = d3.interpolateNumber(start, end);
       return function(t) {
-        selection.text(Math.round(interpolator(t)) + "%");
+        selection.text(truncateD(interpolator(t), 2) + "%");
       };
     });
 }
@@ -928,7 +938,7 @@ function createTimeline() {
     .attr("fill", "grey");
 }
 
-function truncateD(number) {
-  num = number * 1000;
-  return Math[num < 0 ? "ceil" : "floor"](num) / 1000;
+function truncateD(number, n = 3) {
+  num = number * (10**n);
+  return Math[num < 0 ? "ceil" : "floor"](num) / (10**n);
 }

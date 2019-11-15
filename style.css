@@ -73,7 +73,7 @@ body p {
 
 #map-group g path{
   stroke: rgb(105, 141, 165);
-  stroke-width: 1px;
+  stroke-width: 0.5px;
   fill-opacity: 0.2;
   fill: rgb(125, 168, 197);
 }
