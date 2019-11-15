@@ -1,5 +1,14 @@
 const scroller = scrollama();
-var colorGuide, pathels, statels, dots, sim;
+const years = [2017, 2016, 2015, 2014, 2013, 2012];
+var PUMAdata,
+  colorGuide,
+  pathels,
+  statels,
+  sim,
+  simNodes = [];
+
+var tester;
+
 var mapcolors = d3
   .scaleLinear()
   .domain([0, 0.5, 1, 2, 10])
@@ -33,6 +42,12 @@ function init() {
     .attr("preserveAspectRatio", "xMidYMid meet")
     .append("g")
     .attr("id", "map-group");
+
+  d3.select("#map-container")
+    .append("g")
+    .attr("id", "dot-container")
+    .style("transform", "translate(0, 230)")
+    .style("opacity", 0);
 
   d3.json("data/map_data.json")
     .then(
@@ -120,6 +135,7 @@ function init() {
       });
 
       d3.json("data/score_data.json").then(function(score_data) {
+        PUMAdata = score_data;
         pathels.data(score_data, function(d, i) {
           return d ? d.GEOID : this.id;
         });
@@ -132,12 +148,13 @@ function init() {
           });
 
           createColorGuide();
-          createDotPlot();
+          addDotLabels();
           createTimeline();
 
           var nonProgressSteps = [2];
 
           var elements = document.querySelectorAll(".sticky");
+
           Stickyfill.add(elements);
           steps[0]();
           scroller
@@ -158,7 +175,6 @@ function init() {
               }
             });
 
-          // setup resize event
           window.addEventListener("resize", scroller.resize);
         });
       });
@@ -296,7 +312,11 @@ var steps = [
       "transform",
       "translate(0," + -230 * progress + ")"
     );
-    sim.restart();
+    d3.select("#dot-container").attr(
+      "transform",
+      "translate(0," + 230 * (1 - progress) + ")"
+    );
+    createDotPlot(0);
     d3.select("#dot-container").style("opacity", progress * 0.9);
 
     d3.selectAll("#dot-container circle");
@@ -359,6 +379,7 @@ var steps = [
     }
 
     if ((progress > 0.05) & (progress < 0.24)) {
+      if (sim.step != 0) createDotPlot(0);
       pathels.style("fill", d => {
         oldVals = hotspotcolors(d.score_2012_g)
           .replace(/[^\d-,.]/g, "")
@@ -386,6 +407,7 @@ var steps = [
         );
       });
     } else if ((progress > 0.24) & (progress < 0.43)) {
+      if (sim.step != 1) createDotPlot(1);
       pathels.style("fill", d => {
         oldVals = hotspotcolors(d.score_2013_g)
           .replace(/[^\d-,.]/g, "")
@@ -413,6 +435,7 @@ var steps = [
         );
       });
     } else if ((progress > 0.43) & (progress < 0.62)) {
+      if (sim.step != 2) createDotPlot(2);
       pathels.style("fill", d => {
         oldVals = hotspotcolors(d.score_2014_g)
           .replace(/[^\d-,.]/g, "")
@@ -440,6 +463,7 @@ var steps = [
         );
       });
     } else if ((progress > 0.62) & (progress < 0.81)) {
+      if (sim.step != 3) createDotPlot(3);
       pathels.style("fill", d => {
         oldVals = hotspotcolors(d.score_2015_g)
           .replace(/[^\d-,.]/g, "")
@@ -466,7 +490,8 @@ var steps = [
           ")"
         );
       });
-    } else if ((progress > 0.81) & (progress < 1)) {
+    } else if ((progress > 0.81) & (progress < 0.95)) {
+      if (sim.step != 4) createDotPlot(4);
       pathels.style("fill", d => {
         oldVals = hotspotcolors(d.score_2016_g)
           .replace(/[^\d-,.]/g, "")
@@ -493,75 +518,203 @@ var steps = [
           ")"
         );
       });
+    } else if (progress > 0.95) {
+      if (sim.step != 5) createDotPlot(5);
+      pathels.style("fill", d => {
+        newVals = hotspotcolors(d.score_2017_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        return (
+          "rgb(" +
+          truncateD(newVals[0]) +
+          "," +
+          truncateD(newVals[1]) +
+          "," +
+          truncateD(newVals[2]) +
+          ")"
+        );
+      });
     }
   },
   function step8() {}
 ];
 
-function createDotPlot() {
-  var dotContainer = d3
-    .select("#map-container")
-    .append("g")
-    .attr("id", "dot-container")
-    .style("opacity", 0);
+function addDotLabels() {
+  container = d3.select("#dot-container");
+  container
+    .append("text")
+    .attr("id", "under-num")
+    .attr("class", "text")
+    .attr("x", 500)
+    .attr("y", 1320)
+    .style("font-size", "45px")
+    .style("fill", "grey")
+    .html("");
+  container
+    .append("text")
+    .attr("class", "text")
+    .attr("x", 500)
+    .attr("y", 1350)
+    .style("fill", "grey")
+    .html("PUMAs with immigrants");
+  container
+    .append("text")
+    .attr("class", "text")
+    .attr("x", 500)
+    .attr("y", 1370)
+    .style("fill", "grey")
+    .html("under-contributing");
 
-  d3.json("data/score_data.json").then(function(score_data) {
-    nodes = score_data.filter(n => n.score_2012 != 1);
-    sim = d3.forceSimulation(nodes);
-    nodes.forEach(function(node) {
-      node.x = 750 * Math.min(1, Math.max(-1, node.score_2012 - 1));
-      node.y = 0;
+  container
+    .append("text")
+    .attr("id", "over-num")
+    .attr("class", "text")
+    .attr("x", 1500)
+    .attr("y", 1320)
+    .attr("text-anchor", "end")
+    .style("font-size", "45px")
+    .style("fill", "grey")
+    .html("");
+  container
+    .append("text")
+    .attr("class", "text")
+    .attr("x", 1500)
+    .attr("y", 1350)
+    .attr("text-anchor", "end")
+    .style("fill", "grey")
+    .html("PUMAs with immigrants");
+  container
+    .append("text")
+    .attr("class", "text")
+    .attr("x", 1500)
+    .attr("y", 1370)
+    .attr("text-anchor", "end")
+    .style("fill", "grey")
+    .html("over-contributing");
+}
+
+function createDotPlot(step) {
+  var scoreSel = "score_" + years[5 - step];
+  var countSel = "immigcount_" + years[5 - step];
+
+  var oldNodes = simNodes;
+  simNodes = PUMAdata.filter(n => n[scoreSel] != 1);
+
+  if (oldNodes.length == 0) {
+    sim = d3.forceSimulation(simNodes);
+    simNodes.forEach(function(node) {
+      node.x = 500 * Math.min(1, Math.max(-1, node[scoreSel] - 1));
+      node.y = Math.random() * 50 - 25;
     });
 
     sim
-      .alphaDecay([0.07])
+      .alphaDecay([0.2])
       .force(
         "collide",
-        d3.forceCollide(d => truncateD(d.immigcount_2012 / 5000)).strength([1])
+        d3.forceCollide(d => truncateD(d[countSel] / 5000)).strength([1])
       )
-      .force("axis", d3.forceY(10).strength([0.1]))
+      .force("axis", d3.forceY(10).strength([0.3]))
       .force("box", boxingForce)
       .force(
         "positioning",
         d3
           .forceX(d => {
-            score = Math.min(1, Math.max(-1, d.score_2012 - 1));
-            return 750 * score;
+            score = Math.min(1, Math.max(-1, d[scoreSel] - 1));
+            return 500 * score;
           })
-          .strength([0.1])
+          .strength([1])
       );
-    function boxingForce() {
-      dx = 750;
-      dy = 150;
-      for (let node of nodes) {
-        node.x = Math.max(-dx, Math.min(dx, node.x));
-        node.y = Math.max(-dy, Math.min(dy, node.y));
-      }
-    }
-    var dotData = dotContainer.selectAll(".dots").data(nodes);
-    dotData
-      .enter()
-      .append("circle")
-      .attr("stroke", "grey")
-      .attr("id", d => "dot" + d.GEOID)
-      .attr("fill", d => mapcolors(d.score_2012))
-      .attr("r", d => truncateD(d.immigcount_2012 / 5000));
-
-    dotData.exit().remove();
-
-    sim.on("tick", () => {
-      console.log("fire");
-      dotContainer
-        .selectAll("circle")
-        .attr("cx", function(d) {
-          return 1000 + d.x;
-        })
-        .attr("cy", function(d) {
-          return 1250 + d.y;
-        });
+  } else {
+    sim
+      .nodes(simNodes)
+      .alpha(1)
+      .restart();
+    simNodes = PUMAdata.filter(n => n[scoreSel] != 1);
+    simNodes.forEach(function(node) {
+      match = oldNodes.filter(n => n.GEOID == node.GEOID);
+      node.x = match.length == 1 ? match[0].x : 0;
+      node.y = match.length == 1 ? match[0].y : 0;
     });
-    sim.stop();
+
+    sim
+      .force(
+        "collide",
+        d3.forceCollide(d => truncateD(d[countSel] / 5000)).strength([1])
+      )
+      .force(
+        "positioning",
+        d3
+          .forceX(d => {
+            score = Math.min(500, Math.max(-500, 750 * (d[scoreSel] - 1)));
+            return score;
+          })
+          .strength([1])
+      );
+  }
+
+  sim.step = step;
+
+  function boxingForce() {
+    dx = 500;
+    dy = 150;
+    for (let node of simNodes) {
+      node.x = Math.max(-dx, Math.min(dx, node.x));
+      node.y = Math.max(-dy, Math.min(dy, node.y));
+    }
+  }
+  var dotContainer = d3.select("#dot-container");
+  var dotData = dotContainer.selectAll(".dots").data(simNodes, d => d.GEOID);
+  dotData
+    .enter()
+    .append("circle")
+    .merge(dotData)
+    .attr("class", "dots")
+    .attr("stroke", "grey")
+    .transition()
+    .delay(1000)
+    .duration(2000)
+    .attr("id", d => "dot" + d.GEOID)
+    .attr("fill", d => mapcolors(d[scoreSel]))
+    .attr("r", d => truncateD(d[countSel] / 5000));
+
+  dotData.exit().remove();
+
+  sim.on("tick", () => {
+    dotContainer
+      .selectAll("circle")
+      .attr("cx", function(d) {
+        return 1000 + d.x;
+      })
+      .attr("cy", function(d) {
+        return 1250 + d.y;
+      });
   });
+
+  d3.select("#under-num")
+    .transition()
+    .duration(1000)
+    .tween("text", function() {
+      var selection = d3.select(this);
+      var start = d3.select(this).text().replace(/[^\d-,.]/g, "");
+      var end = simNodes.filter(n => n[scoreSel] < 1).length / 23.51;
+      var interpolator = d3.interpolateNumber(start, end);
+      return function(t) {
+        selection.text(Math.round(interpolator(t)) + "%");
+      };
+    });
+
+    d3.select("#over-num")
+    .transition()
+    .duration(1000)
+    .tween("text", function() {
+      var selection = d3.select(this);
+      var start = d3.select(this).text().replace(/[^\d-,.]/g, "");
+      var end = simNodes.filter(n => n[scoreSel] > 1).length / 23.51;
+      var interpolator = d3.interpolateNumber(start, end);
+      return function(t) {
+        selection.text(Math.round(interpolator(t)) + "%");
+      };
+    });
 }
 
 function createColorGuide() {
@@ -584,7 +737,7 @@ function createColorGuide() {
   colorGuide.html(
     "<defs><linearGradient id='gradient' x1='0' x2='0' y1='0' y2='1'>" +
       "<stop offset='10%' stop-color='rgb(0, 117, 137)'/>" +
-      "<stop offset='50%' stop-color='rgb(185, 202, 146)'/>" +
+      "<stop offset='50%' stop-color='rgb(255, 255, 255)'/>" +
       "<stop offset='90%' stop-color='rgb(255, 199, 14)'/>" +
       "</linearGradient></defs>"
   );
@@ -611,21 +764,21 @@ function createColorGuide() {
     .attr("y", 40)
     .style("font-size", "30px")
     .style("fill", "grey")
-    .html("Over");
+    .text("Over");
   labels1
     .append("text")
     .attr("x", 0)
     .attr("y", 60)
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("Contributing");
+    .text("Contributing");
   labels1
     .append("text")
     .attr("x", 0)
     .attr("y", 80)
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("Regions");
+    .text("Regions");
 
   labels1
     .append("text")
@@ -633,21 +786,21 @@ function createColorGuide() {
     .attr("y", 940)
     .style("font-size", "30px")
     .style("fill", "grey")
-    .html("Under");
+    .text("Under");
   labels1
     .append("text")
     .attr("x", 0)
     .attr("y", 960)
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("Contributing");
+    .text("Contributing");
   labels1
     .append("text")
     .attr("x", 0)
     .attr("y", 980)
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("Regions");
+    .text("Regions");
 
   labels2 = colorGuide
     .append("g")
@@ -661,21 +814,21 @@ function createColorGuide() {
     .attr("y", 40)
     .style("font-size", "30px")
     .style("fill", "grey")
-    .html("Over");
+    .text("Over");
   labels2
     .append("text")
     .attr("x", 0)
     .attr("y", 60)
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("Contributing");
+    .text("Contributing");
   labels2
     .append("text")
     .attr("x", 0)
     .attr("y", 80)
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("Hotspots");
+    .text("Hotspots");
 
   labels2
     .append("text")
@@ -683,21 +836,21 @@ function createColorGuide() {
     .attr("y", 940)
     .style("font-size", "30px")
     .style("fill", "grey")
-    .html("Under");
+    .text("Under");
   labels2
     .append("text")
     .attr("x", 0)
     .attr("y", 960)
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("Contributing");
+    .text("Contributing");
   labels2
     .append("text")
     .attr("x", 0)
     .attr("y", 980)
     .style("fill", "grey")
     .style("font-size", "25px")
-    .html("Hotspots");
+    .text("Hotspots");
 }
 
 function createTimeline() {
@@ -717,7 +870,6 @@ function createTimeline() {
     .attr("viewBox", "0, 0, 200, 1000")
     .attr("preserveAspectRatio", "xMidYMid meet");
 
-  years = [2017, 2016, 2015, 2014, 2013, 2012];
   for (var i = 0; i < years.length; i++) {
     timeline
       .append("text")
