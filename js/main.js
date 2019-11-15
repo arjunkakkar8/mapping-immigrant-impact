@@ -1,13 +1,25 @@
 const scroller = scrollama();
-var colorGuide, pathels, statels;
+var colorGuide, pathels, statels, dots, sim;
 var mapcolors = d3
   .scaleLinear()
-  .domain([0.5, 1, 2])
-  .range(["rgb(255, 199, 14)", "rgb(185, 202, 146)", "rgb(0, 117, 137)"]);
+  .domain([0, 0.5, 1, 2, 10])
+  .range([
+    "rgb(255, 199, 14)",
+    "rgb(255, 199, 14)",
+    "rgb(255, 255, 255)",
+    "rgb(0, 117, 137)",
+    "rgb(0, 117, 137)"
+  ]);
 var hotspotcolors = d3
   .scaleLinear()
-  .domain([-1.5, 0, 1.5])
-  .range(["rgb(255, 199, 14)", "rgb(185, 202, 146)", "rgb(0, 117, 137)"]);
+  .domain([-10, -1.5, 0, 1.5, 10])
+  .range([
+    "rgb(255, 199, 14)",
+    "rgb(255, 199, 14)",
+    "rgb(255, 255, 255)",
+    "rgb(0, 117, 137)",
+    "rgb(0, 117, 137)"
+  ]);
 
 function init() {
   map = d3.select("#basemap");
@@ -120,9 +132,10 @@ function init() {
           });
 
           createColorGuide();
+          createDotPlot();
           createTimeline();
 
-          var progressSteps = [1, 3, 4, 5, 6];
+          var nonProgressSteps = [2];
 
           var elements = document.querySelectorAll(".sticky");
           Stickyfill.add(elements);
@@ -135,12 +148,12 @@ function init() {
               order: true
             })
             .onStepEnter(response => {
-              if (!progressSteps.includes(response.index)) {
+              if (nonProgressSteps.includes(response.index)) {
                 steps[response.index](response);
               }
             })
             .onStepProgress(response => {
-              if (progressSteps.includes(response.index)) {
+              if (!nonProgressSteps.includes(response.index)) {
                 steps[response.index](response.progress);
               }
             });
@@ -253,11 +266,11 @@ var steps = [
       .style(
         "stroke",
         "rgb(" +
-          (progress * 128 + (1 - progress) * 185) +
+          (progress * 128 + (1 - progress) * 105) +
           "," +
-          (progress * 128 + (1 - progress) * 202) +
+          (progress * 128 + (1 - progress) * 141) +
           "," +
-          (progress * 128 + (1 - progress) * 146) +
+          (progress * 128 + (1 - progress) * 165) +
           ")"
       )
       .style("fill", d => {
@@ -266,11 +279,11 @@ var steps = [
           .split(",");
         return (
           "rgb(" +
-          (progress * fillVals[0] + (1 - progress) * 185) +
+          (progress * fillVals[0] + (1 - progress) * 125) +
           "," +
-          (progress * fillVals[1] + (1 - progress) * 202) +
+          (progress * fillVals[1] + (1 - progress) * 168) +
           "," +
-          (progress * fillVals[2] + (1 - progress) * 146) +
+          (progress * fillVals[2] + (1 - progress) * 197) +
           ")"
         );
       })
@@ -279,6 +292,16 @@ var steps = [
     colorGuideGroup.style("opacity", progress);
   },
   function step4(progress) {
+    d3.select("#map-group").attr(
+      "transform",
+      "translate(0," + -230 * progress + ")"
+    );
+    sim.restart();
+    d3.select("#dot-container").style("opacity", progress * 0.9);
+
+    d3.selectAll("#dot-container circle");
+  },
+  function step5(progress) {
     pathels.style("fill", d => {
       oldVals = mapcolors(d.score_2012)
         .replace(/[^\d-,.]/g, "")
@@ -299,11 +322,12 @@ var steps = [
     d3.select("#scaleLabels1").style("opacity", 1 - progress);
     d3.select("#scaleLabels2").style("opacity", progress);
   },
-  function step5(progress){
+  function step6(progress) {
     statels.each(function(d) {
       elem = d3.select(this);
       scaler =
-        (4*progress*(1-progress) * truncateD(d.immigcount_2017) + (1-4*progress*(1-progress)));
+        4 * progress * (1 - progress) * truncateD(d.immigcount_2017) +
+        (1 - 4 * progress * (1 - progress));
       coords = elem
         .attr("origpos")
         .replace(/[^\d-,.]/g, "")
@@ -321,7 +345,7 @@ var steps = [
       );
     });
   },
-  function step6(progress) {
+  function step7(progress) {
     if (progress < 0.01) {
       d3.select("#timeline-group").style("opacity", 0);
     } else if (progress < 0.05) {
@@ -361,7 +385,6 @@ var steps = [
           ")"
         );
       });
-      
     } else if ((progress > 0.24) & (progress < 0.43)) {
       pathels.style("fill", d => {
         oldVals = hotspotcolors(d.score_2013_g)
@@ -472,9 +495,74 @@ var steps = [
       });
     }
   },
-  function step7() {
-  }
+  function step8() {}
 ];
+
+function createDotPlot() {
+  var dotContainer = d3
+    .select("#map-container")
+    .append("g")
+    .attr("id", "dot-container")
+    .style("opacity", 0);
+
+  d3.json("data/score_data.json").then(function(score_data) {
+    nodes = score_data.filter(n => n.score_2012 != 1);
+    sim = d3.forceSimulation(nodes);
+    nodes.forEach(function(node) {
+      node.x = 750 * Math.min(1, Math.max(-1, node.score_2012 - 1));
+      node.y = 0;
+    });
+
+    sim
+      .alphaDecay([0.07])
+      .force(
+        "collide",
+        d3.forceCollide(d => truncateD(d.immigcount_2012 / 5000)).strength([1])
+      )
+      .force("axis", d3.forceY(10).strength([0.1]))
+      .force("box", boxingForce)
+      .force(
+        "positioning",
+        d3
+          .forceX(d => {
+            score = Math.min(1, Math.max(-1, d.score_2012 - 1));
+            return 750 * score;
+          })
+          .strength([0.1])
+      );
+    function boxingForce() {
+      dx = 750;
+      dy = 150;
+      for (let node of nodes) {
+        node.x = Math.max(-dx, Math.min(dx, node.x));
+        node.y = Math.max(-dy, Math.min(dy, node.y));
+      }
+    }
+    var dotData = dotContainer.selectAll(".dots").data(nodes);
+    dotData
+      .enter()
+      .append("circle")
+      .attr("stroke", "grey")
+      .attr("id", d => "dot" + d.GEOID)
+      .attr("fill", d => mapcolors(d.score_2012))
+      .attr("r", d => truncateD(d.immigcount_2012 / 5000));
+
+    dotData.exit().remove();
+
+    sim.on("tick", () => {
+      console.log("fire");
+      dotContainer
+        .selectAll("circle")
+        .attr("cx", function(d) {
+          return 1000 + d.x;
+        })
+        .attr("cy", function(d) {
+          return 1250 + d.y;
+        });
+    });
+    sim.stop();
+  });
+}
 
 function createColorGuide() {
   colorGuideGroup = d3

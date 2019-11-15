@@ -22,7 +22,7 @@ body p {
 
 .text {
   font-family: "Courier New", Courier, monospace;
-  font-size: 20px;
+  font-size: 2vmin;
   color: grey;
 }
 
@@ -35,14 +35,14 @@ body p {
 .title {
   font-size: 5vmin;
   top: 5vh;
-  padding-bottom: 20vh;
+  padding-bottom: 25vmin;
 }
 
 .subtitle {
   font-size: 4vmin;
   top: 5vh;
-  padding-top: 10vh;
-  padding-bottom: 8vh;
+  padding-top: 10vmin;
+  padding-bottom: 12vmin;
 }
 
 .title,
@@ -55,25 +55,16 @@ body p {
 }
 
 #navguide {
-  top: 85vh;
+  top: 85%;
   width: 100%;
-}
-
-#scroll-option {
-  float: left;
-  width: 50%;
-  text-align: center;
-}
-
-#click-option {
-  float: right;
-  width: 50%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   text-align: center;
 }
 
 #vline {
   border-left: 2px solid grey;
-  height: 6vmin;
+  height: 100%;
   position: absolute;
   left: 50%;
   top: 0;
@@ -81,10 +72,10 @@ body p {
 }
 
 #map-group g path{
-  stroke: rgb(185, 202, 146);
+  stroke: rgb(105, 141, 165);
   stroke-width: 1px;
   fill-opacity: 0.2;
-  fill: rgb(185, 202, 146);
+  fill: rgb(125, 168, 197);
 }
 
 #intro {
