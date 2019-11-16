@@ -594,7 +594,8 @@ function createDotPlot(step) {
     });
 
     sim
-      .alphaDecay([0.2])
+      .alpha(0.1)
+      .alphaDecay([0.03])
       .force(
         "collide",
         d3.forceCollide(d => truncateD(d[countSel] / 5000)).strength([1])
@@ -613,7 +614,7 @@ function createDotPlot(step) {
   } else {
     sim
       .nodes(simNodes)
-      .alpha(1)
+      .alpha(0.1)
       .restart();
     simNodes = PUMAdata.filter(n => n[scoreSel] != 1);
     simNodes.forEach(function(node) {
