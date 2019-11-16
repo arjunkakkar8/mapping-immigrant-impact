@@ -1,6 +1,7 @@
 const scroller = scrollama();
 const years = [2017, 2016, 2015, 2014, 2013, 2012];
-var PUMAdata,
+var animId,
+  PUMAdata,
   colorGuide,
   pathels,
   statels,
@@ -31,21 +32,7 @@ var hotspotcolors = d3
   ]);
 
 function init() {
-  map = d3.select("#basemap");
-  map
-    .append("svg")
-    .attr("width", "100%")
-    .attr("height", "100%")
-    .append("svg")
-    .attr("id", "map-container")
-    .attr("viewBox", "0, 0, 2000, 1500")
-    .attr("preserveAspectRatio", "xMidYMid meet")
-    .append("g")
-    .attr("id", "map-group");
-
-  d3.select("#map-container")
-    .append("g")
-    .attr("id", "dot-container")
+  d3.select("#dot-container")
     .style("transform", "translate(0, 230)")
     .style("opacity", 0);
 
@@ -186,70 +173,65 @@ init();
 var steps = [
   function step0() {
     d3.select(".animator").classed("active", true);
-    requestAnimationFrame(function animate() {
-      d3.selectAll(".state-container").each(function() {
-        var prevTran = d3
-          .select(this)
-          .attr("prevtrans")
-          .replace(/[^\d-,.]/g, "")
-          .split(",");
-
-        var velocity = d3
-          .select(this)
-          .attr("prevvelocity")
-          .replace(/[^\d-,.]/g, "")
-          .split(",");
-
-        var origPos = d3
-          .select(this)
-          .attr("origpos")
-          .replace(/[^\d-,.]/g, "")
-          .split(",");
-
-        var xvel = truncateD(
-          Math.max(
-            Math.min(Number(velocity[0]) + 0.2 * (Math.random() - 0.5), 1),
-            -1
-          )
-        );
-        var yvel = truncateD(
-          Math.max(
-            Math.min(Number(velocity[1]) + 0.2 * (Math.random() - 0.5), 1),
-            -1
-          )
-        );
-
-        if (Number(prevTran[0]) + Number(origPos[0]) > 2000) {
-          xvel = -Math.abs(xvel);
-        }
-        if (Number(origPos[0]) + Number(prevTran[0]) < 0) {
-          xvel = Math.abs(xvel);
-        }
-        if (Number(prevTran[1]) + Number(origPos[1]) > 1500) {
-          yvel = -Math.abs(yvel);
-        }
-        if (Number(prevTran[1]) + Number(origPos[1]) < 0) {
-          yvel = Math.abs(yvel);
-        }
-        var xtrans = truncateD(Number(prevTran[0]) + xvel);
-        var ytrans = truncateD(Number(prevTran[1]) + yvel);
-
-        d3.select(this)
-          .attr("transform", "translate(" + xtrans + "," + ytrans + ")")
-          .attr("prevtrans", "translate(" + xtrans + "," + ytrans + ")")
-          .attr("prevvelocity", "(" + xvel + "," + yvel + ")");
-      });
-
+    var animId = window.requestAnimationFrame(function animate() {
       if (d3.select(".animator").classed("active")) {
-        requestAnimationFrame(animate);
+        d3.selectAll(".state-container").each(function() {
+          var prevTran = d3
+            .select(this)
+            .attr("prevtrans")
+            .replace(/[^\d-,.]/g, "")
+            .split(",");
+
+          var velocity = d3
+            .select(this)
+            .attr("prevvelocity")
+            .replace(/[^\d-,.]/g, "")
+            .split(",");
+
+          var origPos = d3
+            .select(this)
+            .attr("origpos")
+            .replace(/[^\d-,.]/g, "")
+            .split(",");
+
+          var xvel = truncateD(
+            Math.max(
+              Math.min(Number(velocity[0]) + 0.2 * (Math.random() - 0.5), 1),
+              -1
+            )
+          );
+          var yvel = truncateD(
+            Math.max(
+              Math.min(Number(velocity[1]) + 0.2 * (Math.random() - 0.5), 1),
+              -1
+            )
+          );
+
+          if (Number(prevTran[0]) + Number(origPos[0]) > 2000) {
+            xvel = -Math.abs(xvel);
+          }
+          if (Number(origPos[0]) + Number(prevTran[0]) < 0) {
+            xvel = Math.abs(xvel);
+          }
+          if (Number(prevTran[1]) + Number(origPos[1]) > 1500) {
+            yvel = -Math.abs(yvel);
+          }
+          if (Number(prevTran[1]) + Number(origPos[1]) < 0) {
+            yvel = Math.abs(yvel);
+          }
+          var xtrans = truncateD(Number(prevTran[0]) + xvel);
+          var ytrans = truncateD(Number(prevTran[1]) + yvel);
+
+          d3.select(this)
+            .attr("transform", "translate(" + xtrans + "," + ytrans + ")")
+            .attr("prevtrans", "translate(" + xtrans + "," + ytrans + ")")
+            .attr("prevvelocity", "(" + xvel + "," + yvel + ")");
+        });
+        window.requestAnimationFrame(animate);
       }
     });
   },
   function step1(progress) {
-    var id = window.requestAnimationFrame(function() {});
-    while (id--) {
-      window.cancelAnimationFrame(id);
-    }
     d3.select(".animator").classed("active", false);
     d3.selectAll("g.state-container").each(function(d, i) {
       var originalPos = d3
@@ -305,7 +287,7 @@ var steps = [
       })
       .style("fill-opacity", 0.6 * progress + 0.2 * (1 - progress));
 
-    colorGuideGroup.style("opacity", progress);
+    d3.select("#color-guide-group").style("opacity", progress);
   },
   function step4(progress) {
     d3.select("#map-group").attr(
@@ -549,7 +531,7 @@ function addDotLabels() {
     .attr("y", 1320)
     .style("font-size", "45px")
     .style("fill", "grey")
-    .html("");
+    .text("");
   container
     .append("text")
     .attr("class", "text")
@@ -557,7 +539,7 @@ function addDotLabels() {
     .attr("y", 1360)
     .style("fill", "grey")
     .style("font-size", "25px")
-    .html("PUMAs with immigrants");
+    .text("PUMAs with immigrants");
   container
     .append("text")
     .attr("class", "text")
@@ -565,7 +547,7 @@ function addDotLabels() {
     .attr("y", 1390)
     .style("fill", "grey")
     .style("font-size", "25px")
-    .html("under-contributing");
+    .text("under-contributing");
 
   container
     .append("text")
@@ -576,7 +558,7 @@ function addDotLabels() {
     .attr("text-anchor", "end")
     .style("font-size", "45px")
     .style("fill", "grey")
-    .html("");
+    .text("");
   container
     .append("text")
     .attr("class", "text")
@@ -585,7 +567,7 @@ function addDotLabels() {
     .attr("text-anchor", "end")
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("PUMAs with immigrants");
+    .text("PUMAs with immigrants");
   container
     .append("text")
     .attr("class", "text")
@@ -594,7 +576,7 @@ function addDotLabels() {
     .attr("text-anchor", "end")
     .style("font-size", "25px")
     .style("fill", "grey")
-    .html("over-contributing");
+    .text("over-contributing");
 }
 
 function createDotPlot(step) {
@@ -728,29 +710,8 @@ function createDotPlot(step) {
 }
 
 function createColorGuide() {
-  colorGuideGroup = d3
-    .select("#map-container")
-    .append("g")
-    .attr("id", "color-guide-group")
-    .style("opacity", 0);
+  colorGuide = d3.select("#color-scale");
 
-  colorGuide = colorGuideGroup
-    .append("svg")
-    .attr("id", "color-scale")
-    .attr("x", 25)
-    .attr("y", 250)
-    .attr("height", 1000)
-    .attr("width", 200)
-    .attr("viewBox", "0, 0, 200, 1000")
-    .attr("preserveAspectRatio", "xMidYMid meet");
-
-  colorGuide.html(
-    "<defs><linearGradient id='gradient' x1='0' x2='0' y1='0' y2='1'>" +
-      "<stop offset='10%' stop-color='rgb(0, 117, 137)'/>" +
-      "<stop offset='50%' stop-color='rgb(255, 255, 255)'/>" +
-      "<stop offset='90%' stop-color='rgb(255, 199, 14)'/>" +
-      "</linearGradient></defs>"
-  );
   colorGuide
     .append("rect")
     .attr("x", 50)
@@ -888,7 +849,7 @@ function createTimeline() {
       .style("fill", "grey")
       .attr("x", 65)
       .attr("y", 20 + truncateD((i * 975) / 5))
-      .html(years[i]);
+      .text(years[i]);
 
     if (i != 5) {
       timeline
@@ -939,6 +900,6 @@ function createTimeline() {
 }
 
 function truncateD(number, n = 3) {
-  num = number * (10**n);
-  return Math[num < 0 ? "ceil" : "floor"](num) / (10**n);
+  num = number * 10 ** n;
+  return Math[num < 0 ? "ceil" : "floor"](num) / 10 ** n;
 }
