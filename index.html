@@ -8,14 +8,14 @@
   </head>
   <body>
     <div id="basemap">
-      <svg width="100%" height="300%">
+      <svg width="100%" height="100%">
         <svg
           id="map-container"
-          viewBox="0, 0, 2000, 4500"
+          viewBox="0, 0, 2000, 1500"
           preserveAspectRatio="xMidYMid meet"
         >
           <g id="map-group"></g>
-          <g id="dot-container"></g>
+          <g id="dot-container" style="opacity:0;"></g>
           <g id="color-guide-group" style="opacity:0;">
             <svg
               id="color-scale"
@@ -72,7 +72,33 @@
         </div>
       </div>
       <div id="offsetswitcher" class="step" , style="height: 1px;"></div>
-      <div id="intro" class="text" style="padding: 100vh 0;">
+      <div id="intro" class="text" style="padding-bottom: 100vh;">
+        <div class="commenttext text">
+          Immigration in the United States has become highly politicized. For
+          every story that spotlights an immigrant entrepreneur, doctor, or
+          teacher who is helping revitalize their community, one can find
+          another that paints immigrants as scapegoats for economic woes.
+          Although these negative anecdotes may do little to sway an already
+          self-proclaimed immigrant advocate, it can leave many of its unversed
+          readers confused about what national narrative they should be
+          supporting.
+          <br /><br />
+          By analyzing the proportional economic contributions of immigrants in
+          their local communities, we can compare their impact and give a more
+          comprehensive picture of their contributions across the country.
+          <br /><br />
+          We show that more often than not, immigrants are making outstanding
+          contributions. However, not all immigrants are contributing at the
+          same levels across the country.
+          <br /><br />
+          National disparities in contributions do not say anything inherent
+          about the immigrants’ propensity to contribute. In fact, instances of
+          under-contribution are often in constant flux and geographically
+          clustered. We hope that highlighting these disparities across regions,
+          states and metropolitan areas will illuminate how political
+          environments and structures may be helping uplift some immigrant
+          communities while limiting others.
+        </div>
         <div class="textbox text step">
           We have constructed a metric that measures the impact immigrants have
           on their local economies. It is composed of three key indicator values
@@ -99,8 +125,22 @@
           We visualize the PUMAs in which immigrant contributions are
           significantly different from the expected value in the dot plot below.
           The dots are sized according to the number of immigrants in the PUMA
-          and are colored accoring to the impact score of immigrants in those
+          and are colored according to the impact score of immigrants in those
           communities.
+        </div>
+        <div class="spacer"></div>
+        <div class="textbox text">
+          Using our Immigrant Impact Metric we can see that
+          <span style="font-weight: bold;">87%</span> of immigrants live in
+          PUMAs where they are over-contributing or equally contributing to the
+          economy. <br /><br />
+          Moreover, immigrants are nationally overrepresented in PUMAs where
+          they are making
+          <span style="font-style: italic;">outsize contributions</span>!
+          <span style="font-weight: bold;">26.9%</span> of the immigrant
+          population lives in over-contributing PUMAs- which make up only
+          <span style="font-weight: bold;">17.9%</span>
+          of the total PUMAs in the country.
         </div>
         <div class="spacer"></div>
         <div class="textbox text step">
@@ -131,7 +171,7 @@
         <div class="text textbox step">
           Clearly, there are some regional hotspots that remain constant over
           time but there are many others that change dramatically over time.
-          Let's take a look at these regions in more detail.
+          Let's take a look at these regions in more detail with 2017 data.
         </div>
       </div>
       <div class="spacer"></div>

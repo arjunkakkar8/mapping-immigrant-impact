@@ -9,6 +9,7 @@ body p {
   top: 0;
   left: 0;
   padding: 0;
+  background-color: rgb(255, 252, 247)
 }
 
 #scroller {
@@ -54,6 +55,23 @@ body p {
   height: 250vh;
 }
 
+.commenttext {
+  position: relative;
+  width: 100%;
+  left: -30%;
+  margin: 100% 0%;
+  padding: 4% 30%;
+  background-image: linear-gradient(
+    to right,
+    rgb(255, 252, 247),
+    rgb(255, 255, 255, 0.8) 20%,
+    rgb(255, 255, 255, 0.8) 80%,
+    rgb(255, 252, 247)
+  );
+  border-top: solid grey 2px;
+  border-bottom: solid grey 2px;
+}
+
 #navguide {
   top: 85%;
   width: 100%;
@@ -71,7 +89,7 @@ body p {
   opacity: 0.8;
 }
 
-#map-group g path{
+#map-group g path {
   stroke: rgb(105, 141, 165);
   stroke-width: 0.5px;
   fill-opacity: 0.2;
@@ -83,7 +101,7 @@ body p {
   position: relative;
 }
 
-#scroll-icon{
+#scroll-icon {
   position: relative;
   stroke-width: 2;
   width: 10%;
@@ -92,7 +110,7 @@ body p {
   left: 45%;
 }
 
-#click-icon{
+#click-icon {
   position: relative;
   stroke-width: 2;
   width: 10%;
@@ -101,31 +119,37 @@ body p {
   left: 45%;
 }
 
-#elem1{
+#elem1 {
   animation: op 2s 0.6s infinite;
 }
-#elem2{
+#elem2 {
   animation: op 2s infinite;
 }
 
 @keyframes op {
-  0% {opacity: 1;}
-  70% {opacity: 0.2;}
-  100% {opacity: 1;}
+  0% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
-.textbox{
+.textbox {
   padding: 2vmin;
   background-color: rgb(255, 255, 255, 0.8);
-  border: solid 2px grey;
-  border-radius: 5px;
+  border: solid 1px grey;
+  border-radius: 1px;
 }
 
-.spacer{
+.spacer {
   height: 100vh;
 }
 
-#color-guide{
+#color-guide {
   position: fixed;
   top: 30vh;
   left: 2vw;

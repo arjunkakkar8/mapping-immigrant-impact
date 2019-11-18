@@ -8,9 +8,7 @@ var animId,
   sim,
   simNodes = [];
 
-var tester;
-
-var mapcolors = d3
+const mapcolors = d3
   .scaleLinear()
   .domain([0, 0.5, 1, 2, 10])
   .range([
@@ -20,7 +18,7 @@ var mapcolors = d3
     "rgb(0, 117, 137)",
     "rgb(0, 117, 137)"
   ]);
-var hotspotcolors = d3
+const hotspotcolors = d3
   .scaleLinear()
   .domain([-10, -1.5, 0, 1.5, 10])
   .range([
@@ -31,10 +29,123 @@ var hotspotcolors = d3
     "rgb(0, 117, 137)"
   ]);
 
+const regions = [
+  {
+    region: "Southwest",
+    states: ["Arizona", "New Mexico", "Texas"],
+    abb: ["AZ", "NM", "TX]"]
+  },
+  {
+    region: "West",
+    states: [
+      "Alaska",
+      "California",
+      "Colorado",
+      "Hawaii",
+      "Idaho",
+      "Montana",
+      "Nevada",
+      "Oregon",
+      "Utah",
+      "Washington",
+      "Wyoming"
+    ],
+    abb: ["AK", "CA", "CO", "HI", "ID", "MT", "NV", "OR", "UT", "WA", "WY"]
+  },
+  {
+    region: "Northeast",
+    states: [
+      "Connecticut",
+      "Delaware",
+      "Maine",
+      "Massachusetts",
+      "New Hampshire",
+      "New Jersey",
+      "New York",
+      "Pennsylvania",
+      "Rhode Island",
+      "Vermont"
+    ],
+    abb: ["CT", "DE", "ME", "MA", "NH", "NJ", "NY", "PA", "RI", "VT"]
+  },
+  {
+    region: "Southeast",
+    states: [
+      "Alabama",
+      "Arkansas",
+      "District of Columbia",
+      "Florida",
+      "Georgia",
+      "Kentucky",
+      "Louisiana",
+      "Maryland",
+      "Mississippi",
+      "North Carolina",
+      "South Carolina",
+      "Tennessee",
+      "Virginia",
+      "West Virginia"
+    ],
+    abb: [
+      "AL",
+      "AR",
+      "DC",
+      "FL",
+      "GA",
+      "KY",
+      "LA",
+      "MD",
+      "MS",
+      "NC",
+      "SC",
+      "TN",
+      "VA",
+      "WV"
+    ]
+  },
+  {
+    region: "Midwest",
+    states: [
+      "Illinois",
+      "Indiana",
+      "Iowa",
+      "Kansas",
+      "Michigan",
+      "Minnesota",
+      "Missouri",
+      "Nebraska",
+      "North Dakota",
+      "Ohio",
+      "Oklahoma",
+      "South Dakota",
+      "Wisconsin"
+    ],
+    abb: [
+      "IL",
+      "IN",
+      "IA",
+      "KS",
+      "MI",
+      "MN",
+      "MO",
+      "NE",
+      "ND",
+      "OH",
+      "OK",
+      "SD",
+      "WI"
+    ]
+  }
+];
+
 function init() {
-  d3.select("#dot-container")
-    .style("transform", "translate(0, 230)")
-    .style("opacity", 0);
+  regions.forEach(region =>
+    d3
+      .select("#map-group")
+      .append("g")
+      .attr("id", region.region)
+      .attr("class", "region-container")
+  );
 
   d3.json("data/map_data.json")
     .then(
@@ -50,17 +161,19 @@ function init() {
         var path = d3.geoPath().projection(projection);
 
         subunits.features.forEach(element => {
-          cname = element.properties.State.replace(/\s/g, "") + "Group";
-          if (document.getElementById(cname) == null) {
+          let state = element.properties.State;
+          let region = regions.filter(n => n.states.includes(state))[0].region;
+          let sname = state.replace(/\s/g, "") + "Group";
+          if (document.getElementById(sname) == null) {
             var groupel = document
-              .getElementById("map-group")
+              .getElementById(region)
               .appendChild(document.createElement("g"));
-            groupel.id = cname;
+            groupel.id = sname;
             groupel.classList.add("state-container");
 
-            if ((cname == "AlaskaGroup") | (cname == "HawaiiGroup")) {
+            if ((sname == "AlaskaGroup") | (sname == "HawaiiGroup")) {
               var sizer = groupel.appendChild(document.createElement("g"));
-              sizer.classList.add(cname + "Sizer");
+              sizer.classList.add(sname + "Sizer");
               var pathel = sizer.appendChild(document.createElement("path"));
             } else {
               var pathel = groupel.appendChild(document.createElement("path"));
@@ -68,13 +181,13 @@ function init() {
             pathel.setAttribute("d", path(element));
             pathel.setAttribute("id", element.properties.GEOID);
           } else {
-            if ((cname == "AlaskaGroup") | (cname == "HawaiiGroup")) {
+            if ((sname == "AlaskaGroup") | (sname == "HawaiiGroup")) {
               var pathel = document
-                .getElementsByClassName(cname + "Sizer")[0]
+                .getElementsByClassName(sname + "Sizer")[0]
                 .appendChild(document.createElement("path"));
             } else {
               var pathel = document
-                .getElementById(cname)
+                .getElementById(sname)
                 .appendChild(document.createElement("path"));
             }
             pathel.setAttribute("d", path(element));
@@ -135,10 +248,10 @@ function init() {
           });
 
           createColorGuide();
-          addDotLabels();
           createTimeline();
+          addDotLabels();
 
-          var nonProgressSteps = [2];
+          var nonProgressSteps = [2, 8];
 
           var elements = document.querySelectorAll(".sticky");
 
@@ -516,33 +629,181 @@ var steps = [
           ")"
         );
       });
+      t = d3
+        .transition()
+        .duration(500)
+        .ease(d3.easeQuadInOut);
+
+      d3.selectAll(".region-container")
+        .transition(t)
+        .attr("transform", "translate(0, 0) scale(1)");
+      d3.selectAll("path").style("stroke-width", "0.5px");
+      d3.select("#overall-under-num").style("opacity", 1);
+      d3.select("#overall-over-num").style("opacity", 1);
+      d3.select("#timeline-group")
+        .transition(t)
+        .style("opacity", 1);
+      d3.selectAll(".cat-lab1")
+        .transition(t)
+        .attr("x", 450);
+      d3.selectAll(".cat-lab2")
+        .transition(t)
+        .attr("x", 1550);
+      d3.select("#region-labels")
+        .transition(t)
+        .style("opacity", 0);
     }
   },
-  function step8() {}
+  function step8() {
+    if (d3.select("#region-labels").nodes().length == 0) addRegionLabels();
+    t = d3
+      .transition()
+      .duration(1000)
+      .ease(d3.easeQuadInOut);
+
+    d3.select("#Southwest")
+      .transition(t)
+      .attr("transform", "translate(200, 120) scale(0.3)");
+
+    d3.select("#West")
+      .transition(t)
+      .attr("transform", "translate(300, 470) scale(0.25)");
+
+    d3.select("#Northeast")
+      .transition(t)
+      .attr("transform", "translate(-250, 680) scale(0.45)");
+
+    d3.select("#Southeast")
+      .transition(t)
+      .attr("transform", "translate(50, 900) scale(0.3)");
+
+    d3.select("#Midwest")
+      .transition(t)
+      .attr("transform", "translate(150, 1250) scale(0.25)");
+
+    d3.select("#region-labels")
+      .transition(t)
+      .style("opacity", 1);
+    d3.selectAll(".region-container path")
+      .transition(t)
+      .style("stroke-width", "1.5px");
+    d3.select("#overall-under-num")
+      .transition(t)
+      .style("opacity", 0);
+    d3.select("#overall-over-num")
+      .transition(t)
+      .style("opacity", 0);
+    d3.select("#timeline-group")
+      .transition(t)
+      .style("opacity", 0);
+    d3.selectAll(".cat-lab1")
+      .transition(t)
+      .attr("x", 1000);
+    d3.selectAll(".cat-lab2")
+      .transition(t)
+      .attr("x", 1800);
+
+    if (sim.step != "region") regionDotPlot();
+  }
 ];
 
+function addRegionLabels() {
+  container = d3
+    .select("#dot-container")
+    .append("g")
+    .attr("id", "region-labels")
+    .style("opacity", 0);
+
+  for (let i = 0; i < 5; i++) {
+    container
+      .append("text")
+      .attr("class", "text")
+      .attr("x", 575)
+      .attr("y", 175 + i * 250)
+      .style("font-size", "45px")
+      .style("fill", "grey")
+      .text(regions[i].region);
+
+    container
+      .append("text")
+      .attr("class", "text")
+      .attr("x", 575)
+      .attr("y", 235 + i * 250)
+      .style("font-size", "25px")
+      .style("fill", "grey")
+      .text("[" + regions[i].abb.slice(0, 7).toString());
+
+    if (regions[i].abb.length > 7) {
+      container
+        .append("text")
+        .attr("class", "text")
+        .attr("x", 590)
+        .attr("y", 260 + i * 250)
+        .style("font-size", "25px")
+        .style("fill", "grey")
+        .text(regions[i].abb.slice(7).toString() + "]");
+    }
+
+    container
+      .append("text")
+      .attr("class", "text")
+      .attr("x", 1000)
+      .attr("y", 260 + i * 250)
+      .style("font-size", "35px")
+      .style("fill", "grey")
+      .text(
+        truncateD(
+          100 * PUMAdata.filter(
+            n => (n.region == regions[i].region) & (n.score_2017 < 1)
+          ).length / PUMAdata.filter(n => n.region == regions[i].region).length,
+          2
+        ) + "%"
+      );
+
+      container
+      .append("text")
+      .attr("class", "text")
+      .attr("x", 1700)
+      .attr("y", 260 + i * 250)
+      .style("font-size", "35px")
+      .style("fill", "grey")
+      .text(
+        truncateD(
+          100*PUMAdata.filter(
+            n => (n.region == regions[i].region) & (n.score_2017 > 1)
+          ).length / PUMAdata.filter(n => n.region == regions[i].region).length,
+          2
+        ) + "%"
+      );
+  }
+}
+
 function addDotLabels() {
-  container = d3.select("#dot-container");
+  container = d3
+    .select("#dot-container")
+    .append("g")
+    .attr("id", "timeline-dot-text");
+  labels = container.append("g").attr("id", "cat-labels");
   container
     .append("text")
-    .attr("id", "under-num")
+    .attr("id", "overall-under-num")
     .attr("class", "text")
     .attr("x", 450)
     .attr("y", 1320)
     .style("font-size", "45px")
     .style("fill", "grey")
     .text("");
-  container
+  labels
     .append("text")
-    .attr("class", "text")
+    .attr("class", "text cat-lab1")
     .attr("x", 450)
     .attr("y", 1360)
     .style("fill", "grey")
     .style("font-size", "25px")
     .text("PUMAs with immigrants");
-  container
+  labels
     .append("text")
-    .attr("class", "text")
+    .attr("class", "text cat-lab1")
     .attr("x", 450)
     .attr("y", 1390)
     .style("fill", "grey")
@@ -551,7 +812,7 @@ function addDotLabels() {
 
   container
     .append("text")
-    .attr("id", "over-num")
+    .attr("id", "overall-over-num")
     .attr("class", "text")
     .attr("x", 1550)
     .attr("y", 1320)
@@ -559,18 +820,18 @@ function addDotLabels() {
     .style("font-size", "45px")
     .style("fill", "grey")
     .text("");
-  container
+  labels
     .append("text")
-    .attr("class", "text")
+    .attr("class", "text cat-lab2")
     .attr("x", 1550)
     .attr("y", 1360)
     .attr("text-anchor", "end")
     .style("font-size", "25px")
     .style("fill", "grey")
     .text("PUMAs with immigrants");
-  container
+  labels
     .append("text")
-    .attr("class", "text")
+    .attr("class", "text cat-lab2")
     .attr("x", 1550)
     .attr("y", 1390)
     .attr("text-anchor", "end")
@@ -579,7 +840,49 @@ function addDotLabels() {
     .text("over-contributing");
 }
 
-function createDotPlot(step) {
+function regionDotPlot() {
+  sim.step = "region";
+  sim
+    .alpha(0.3)
+    .restart()
+    .force(
+      "axis",
+      d3
+        .forceY(d => {
+          switch (d.region) {
+            case "Southwest":
+              return -1050;
+            case "West":
+              return -800;
+            case "Northeast":
+              return -550;
+            case "Southeast":
+              return -300;
+            case "Midwest":
+              return -50;
+
+            default:
+              return 10;
+          }
+        })
+        .strength([0.3])
+    )
+    .force("box", null)
+    .force(
+      "positioning",
+      d3
+        .forceX(d => {
+          score = Math.min(
+            900,
+            Math.max(-100, 400 + 750 * (d["score_2017"] - 1))
+          );
+          return score;
+        })
+        .strength([1])
+    );
+}
+
+function createDotPlot(step, alpha = 0.3) {
   var scoreSel = "score_" + years[5 - step];
   var countSel = "immigcount_" + years[5 - step];
 
@@ -594,7 +897,7 @@ function createDotPlot(step) {
     });
 
     sim
-      .alpha(0.1)
+      .alpha(alpha)
       .alphaDecay([0.03])
       .force(
         "collide",
@@ -614,7 +917,7 @@ function createDotPlot(step) {
   } else {
     sim
       .nodes(simNodes)
-      .alpha(0.1)
+      .alpha(alpha)
       .restart();
     simNodes = PUMAdata.filter(n => n[scoreSel] != 1);
     simNodes.forEach(function(node) {
@@ -628,6 +931,7 @@ function createDotPlot(step) {
         "collide",
         d3.forceCollide(d => truncateD(d[countSel] / 5000)).strength([1])
       )
+      .force("axis", d3.forceY(10).strength([0.3]))
       .force(
         "positioning",
         d3
@@ -639,8 +943,6 @@ function createDotPlot(step) {
       );
   }
 
-  sim.step = step;
-
   function boxingForce() {
     dx = 500;
     dy = 150;
@@ -649,6 +951,9 @@ function createDotPlot(step) {
       node.y = Math.max(-dy, Math.min(dy, node.y));
     }
   }
+
+  sim.step = step;
+
   var dotContainer = d3.select("#dot-container");
   var dotData = dotContainer.selectAll(".dots").data(simNodes, d => d.GEOID);
   dotData
@@ -664,7 +969,12 @@ function createDotPlot(step) {
     .attr("fill", d => mapcolors(d[scoreSel]))
     .attr("r", d => truncateD(d[countSel] / 5000));
 
-  dotData.exit().remove();
+  dotData
+    .exit()
+    .transition()
+    .duration(1000)
+    .attr("r", 0)
+    .remove();
 
   sim.on("tick", () => {
     dotContainer
@@ -677,7 +987,7 @@ function createDotPlot(step) {
       });
   });
 
-  d3.select("#under-num")
+  d3.select("#overall-under-num")
     .transition()
     .duration(1000)
     .tween("text", function() {
@@ -693,7 +1003,7 @@ function createDotPlot(step) {
       };
     });
 
-  d3.select("#over-num")
+  d3.select("#overall-over-num")
     .transition()
     .duration(1000)
     .tween("text", function() {
