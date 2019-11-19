@@ -864,10 +864,10 @@ function changeStateGrid(selector) {
     .attr("width", w)
     .attr("height", h)
     .attr("stroke", "rgb(128, 128, 128, 0.3)")
-    .transition(t)
-    .attr("fill", d => stateviewcolors(mulSel * d[varSel]))
     .attr("fill-opacity", 1)
-    .style("opacity", 0.5);
+    .style("opacity", 0.5)
+    .transition(t)
+    .attr("fill", d => stateviewcolors(mulSel * d[varSel]));
 
   textData = d3
     .select("#state-view-group")
@@ -880,12 +880,12 @@ function changeStateGrid(selector) {
     .attr("text-anchor", "middle")
     .merge(textData)
     .attr("id", d => d.state.replace(/\s/g, "") + "-label")
+    .style("font-size", "30px")
+    .style("fill", "grey")
     .transition(t)
     .delay((d, i) => i * 25)
     .attr("x", (d, i) => 100 + (0.5 + (i % 9)) * w)
     .attr("y", (d, i) => truncateD(300 + (0.95 + Math.floor(i / 9)) * h))
-    .style("font-size", "30px")
-    .style("fill", "grey")
     .tween("text", function(d, i) {
       let selection = d3.select(this);
       let start = selection.text().replace(/[^\d-,.]/g, "");
@@ -898,7 +898,7 @@ function changeStateGrid(selector) {
 
   sim.step = "state" + selector;
   sim
-    .alpha(1)
+    .alpha(0.5)
     .restart()
     .force("axis", null)
     .force("positioning", null)
@@ -913,7 +913,7 @@ function changeStateGrid(selector) {
             return 600;
           }
         })
-        .strength(0.08)
+        .strength(0.15)
     )
     .force(
       "py",
@@ -926,7 +926,7 @@ function changeStateGrid(selector) {
             return 200;
           }
         })
-        .strength(0.08)
+        .strength(0.15)
     )
     .force("box", boxingForce);
 
