@@ -89,11 +89,11 @@ body p {
   opacity: 0.8;
 }
 
-#map-group g path {
-  stroke: rgb(105, 141, 165);
+#map-group g path{
+  stroke: grey;
   stroke-width: 0.5px;
-  fill-opacity: 0.2;
-  fill: rgb(125, 168, 197);
+  fill-opacity: 0.6;
+  fill: rgb(255, 218, 188)
 }
 
 #intro {
