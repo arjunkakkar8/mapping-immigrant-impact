@@ -89,7 +89,7 @@ body p {
   opacity: 0.8;
 }
 
-#map-group g path{
+.path-container{
   stroke: grey;
   stroke-width: 0.5px;
   fill-opacity: 0.6;

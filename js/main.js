@@ -3,7 +3,7 @@ const years = [2017, 2016, 2015, 2014, 2013, 2012];
 let PUMAdata,
   stateData = [],
   colorGuide,
-  pathels,
+  pathconts,
   statels,
   sim,
   simNodes = [];
@@ -169,8 +169,8 @@ function init() {
           let state = element.properties.State;
           let region = regions.filter(n => n.states.includes(state))[0].region;
           let sname = state.replace(/\s/g, "") + "Group";
+          let pathcont, pathel;
           if (document.getElementById(sname) == null) {
-            let pathel;
             let groupel = document
               .getElementById(region)
               .appendChild(document.createElement("g"));
@@ -180,25 +180,25 @@ function init() {
             if ((sname == "AlaskaGroup") | (sname == "HawaiiGroup")) {
               let sizer = groupel.appendChild(document.createElement("g"));
               sizer.classList.add(sname + "Sizer");
-              pathel = sizer.appendChild(document.createElement("path"));
+              pathcont = sizer.appendChild(document.createElement("g"));
             } else {
-              pathel = groupel.appendChild(document.createElement("path"));
+              pathcont = groupel.appendChild(document.createElement("g"));
             }
-            pathel.setAttribute("d", path(element));
-            pathel.setAttribute("id", element.properties.GEOID);
           } else {
             if ((sname == "AlaskaGroup") | (sname == "HawaiiGroup")) {
-              pathel = document
+              pathcont = document
                 .getElementsByClassName(sname + "Sizer")[0]
-                .appendChild(document.createElement("path"));
+                .appendChild(document.createElement("g"));
             } else {
-              pathel = document
+              pathcont = document
                 .getElementById(sname)
-                .appendChild(document.createElement("path"));
+                .appendChild(document.createElement("g"));
             }
-            pathel.setAttribute("d", path(element));
-            pathel.setAttribute("id", element.properties.GEOID);
           }
+          pathel = pathcont.appendChild(document.createElement("path"));
+          pathel.setAttribute("d", path(element));
+          pathcont.setAttribute("id", element.properties.GEOID);
+          pathcont.classList.add("path-container");
         });
         document.getElementById("map-group").innerHTML += "";
       },
@@ -236,13 +236,13 @@ function init() {
               truncateD(2 * (Math.random() - 0.5)) +
               ")"
           );
-        pathels = d3.selectAll("g.region-container path");
+        pathconts = d3.selectAll(".path-container");
         statels = d3.selectAll(".state-container");
       });
 
       d3.json("data/score_data.json").then(function(score_data) {
         PUMAdata = score_data;
-        pathels.data(score_data, function(d, i) {
+        pathconts.data(score_data, function(d, i) {
           return d ? d.GEOID : this.id;
         });
 
@@ -258,8 +258,9 @@ function init() {
           addDotLabels();
           createStateData();
           createStateElems();
+          createMetroElems();
 
-          let nonProgressSteps = [0, 2, 8, 9];
+          let nonProgressSteps = [0, 2, 8, 9, 11];
 
           let elements = document.querySelectorAll(".sticky");
 
@@ -381,7 +382,7 @@ let steps = [
     }
   },
   function step3(progress) {
-    pathels.style("fill", d => {
+    pathconts.style("fill", d => {
       fillVals = mapcolors(d.score_2012)
         .replace(/[^\d-,.]/g, "")
         .split(",");
@@ -413,30 +414,7 @@ let steps = [
     d3.selectAll("#dot-container circle");
   },
   function step5(progress) {
-    pathels
-      .style("fill", d => {
-        oldVals = mapcolors(d.score_2012)
-          .replace(/[^\d-,.]/g, "")
-          .split(",");
-        newVals = hotspotcolors(d.score_2012_g)
-          .replace(/[^\d-,.]/g, "")
-          .split(",");
-        return (
-          "rgb(" +
-          (progress * newVals[0] + (1 - progress) * oldVals[0]) +
-          "," +
-          (progress * newVals[1] + (1 - progress) * oldVals[1]) +
-          "," +
-          (progress * newVals[2] + (1 - progress) * oldVals[2]) +
-          ")"
-        );
-      })
-      .style("stroke-width", 0.4 * (1 - progress) + "px");
-    d3.select("#scaleLabels1").style("opacity", 1 - progress);
-    d3.select("#scaleLabels2").style("opacity", progress);
-  },
-  function step6(progress) {
-    pathels.style("stroke-width", 4 * progress * (1 - progress) * 0.6 + "px");
+    pathconts.style("stroke-width", "0.5px");
     statels.each(function(d) {
       let scaler =
         4 * progress * (1 - progress) * truncateD(d.immigcount_2017) +
@@ -458,6 +436,29 @@ let steps = [
       );
     });
   },
+  function step6(progress) {
+    pathconts
+      .style("fill", d => {
+        oldVals = mapcolors(d.score_2012)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        newVals = hotspotcolors(d.score_2012_g)
+          .replace(/[^\d-,.]/g, "")
+          .split(",");
+        return (
+          "rgb(" +
+          (progress * newVals[0] + (1 - progress) * oldVals[0]) +
+          "," +
+          (progress * newVals[1] + (1 - progress) * oldVals[1]) +
+          "," +
+          (progress * newVals[2] + (1 - progress) * oldVals[2]) +
+          ")"
+        );
+      })
+      .style("stroke-width", 0.5 * (1 - progress) + "px");
+    d3.select("#scaleLabels1").style("opacity", 1 - progress);
+    d3.select("#scaleLabels2").style("opacity", progress);
+  },
   function step7(progress) {
     if (progress < 0.01) {
       d3.select("#timeline-group").style("opacity", 0);
@@ -473,7 +474,7 @@ let steps = [
 
     if ((progress > 0.05) & (progress < 0.24)) {
       if (sim.step != 0) createDotPlot(0);
-      pathels.style("fill", d => {
+      pathconts.style("fill", d => {
         oldVals = hotspotcolors(d.score_2012_g)
           .replace(/[^\d-,.]/g, "")
           .split(",");
@@ -501,7 +502,7 @@ let steps = [
       });
     } else if ((progress > 0.24) & (progress < 0.43)) {
       if (sim.step != 1) createDotPlot(1);
-      pathels.style("fill", d => {
+      pathconts.style("fill", d => {
         oldVals = hotspotcolors(d.score_2013_g)
           .replace(/[^\d-,.]/g, "")
           .split(",");
@@ -529,7 +530,7 @@ let steps = [
       });
     } else if ((progress > 0.43) & (progress < 0.62)) {
       if (sim.step != 2) createDotPlot(2);
-      pathels.style("fill", d => {
+      pathconts.style("fill", d => {
         oldVals = hotspotcolors(d.score_2014_g)
           .replace(/[^\d-,.]/g, "")
           .split(",");
@@ -557,7 +558,7 @@ let steps = [
       });
     } else if ((progress > 0.62) & (progress < 0.81)) {
       if (sim.step != 3) createDotPlot(3);
-      pathels.style("fill", d => {
+      pathconts.style("fill", d => {
         oldVals = hotspotcolors(d.score_2015_g)
           .replace(/[^\d-,.]/g, "")
           .split(",");
@@ -585,7 +586,7 @@ let steps = [
       });
     } else if ((progress > 0.81) & (progress < 0.95)) {
       if (sim.step != 4) createDotPlot(4);
-      pathels.style("fill", d => {
+      pathconts.style("fill", d => {
         oldVals = hotspotcolors(d.score_2016_g)
           .replace(/[^\d-,.]/g, "")
           .split(",");
@@ -613,7 +614,7 @@ let steps = [
       });
     } else if (progress > 0.95) {
       if (sim.step != 5) createDotPlot(5);
-      pathels.style("fill", d => {
+      pathconts.style("fill", d => {
         newVals = hotspotcolors(d.score_2017_g)
           .replace(/[^\d-,.]/g, "")
           .split(",");
@@ -650,7 +651,7 @@ let steps = [
         .transition(t)
         .style("opacity", 0);
     }
-    pathels.style("stroke-width", "0px");
+    pathconts.style("stroke-width", "0px");
   },
   function step8() {
     if (d3.select("#region-labels").nodes().length == 0) addRegionLabels();
@@ -688,7 +689,7 @@ let steps = [
     d3.select("#region-labels")
       .transition(t)
       .style("opacity", 1);
-    pathels
+    pathconts
       .transition(t)
       .delay(1500)
       .style("stroke-width", "1px");
@@ -782,8 +783,71 @@ let steps = [
     } else if ((progress > 0.75) & (progress < 1) & (sim.step != "state4")) {
       changeStateGrid(4);
     }
+    if (progress > 0.9) {
+      d3.select("#region-labels")
+        .transition(t)
+        .style("opacity", 0);
+      d3.select("#map-group")
+        .transition(t)
+        .style("opacity", 0);
+      d3.select("#color-guide-group")
+        .transition(t)
+        .style("opacity", 0);
+      d3.select("#cat-labels")
+        .transition(t)
+        .style("opacity", 0);
+      d3.select("#state-view-group")
+        .transition(t)
+        .style("opacity", 1);
+
+      pathconts.attr("transform", "translate(0, 0) scale(1)");
+    }
+  },
+  function step11() {
+    t = d3
+      .transition()
+      .duration(500)
+      .ease(d3.easeQuadInOut);
+    d3.select("#state-view-group")
+      .transition(t)
+      .style("opacity", 0);
+
+    d3.select("#map-group")
+      .transition(t)
+      .style("opacity", 1);
+
+    d3.selectAll(".region-container")
+      .transition(t)
+      .attr("transform", "translate(0, 0) scale(1)");
+
+    pathconts
+      .transition(t)
+      .attr("transform", d => {
+        switch (d.metro) {
+          case 2:
+            return "translate(100, 500) scale(0.3)";
+          case 3:
+            return "translate(1000, 500) scale(0.3)";
+          case 1:
+            return "translate(1000, 1200) scale(0.3)";
+          default:
+            return "translate(100, 1200) scale(0.3)";
+        }
+      })
+      .style("stroke-width", "0.5px");
   }
 ];
+
+function createMetroElems() {
+  let container = d3.select("#metro-view-group");
+  for (let i = 0; i < 4; i++) {
+    container.append("rect")
+    .attr("x", i%2 * 1000)
+    .attr("y", 300 + Math.floor(i/2)*600)
+    .attr("width", 1000)
+    .attr("height", 600);
+  }
+}
 
 function createStateData() {
   const states = [].concat(...regions.map(r => r.states));
