@@ -2,6 +2,7 @@ const scroller = scrollama();
 const years = [2017, 2016, 2015, 2014, 2013, 2012];
 let PUMAdata,
   stateData = [],
+  metroData,
   colorGuide,
   pathconts,
   statels,
@@ -760,21 +761,6 @@ let steps = [
     );
 
     if ((progress < 0.25) & (sim.step != "state1")) {
-      d3.select("#region-labels")
-        .transition(t)
-        .style("opacity", 0);
-      d3.select("#map-group")
-        .transition(t)
-        .style("opacity", 0);
-      d3.select("#color-guide-group")
-        .transition(t)
-        .style("opacity", 0);
-      d3.select("#cat-labels")
-        .transition(t)
-        .style("opacity", 0);
-      d3.select("#state-view-group")
-        .transition(t)
-        .style("opacity", 1);
       changeStateGrid(1);
     } else if ((progress > 0.25) & (progress < 0.5) & (sim.step != "state2")) {
       changeStateGrid(2);
@@ -783,25 +769,28 @@ let steps = [
     } else if ((progress > 0.75) & (progress < 1) & (sim.step != "state4")) {
       changeStateGrid(4);
     }
-    if (progress > 0.9) {
-      d3.select("#region-labels")
-        .transition(t)
-        .style("opacity", 0);
-      d3.select("#map-group")
-        .transition(t)
-        .style("opacity", 0);
-      d3.select("#color-guide-group")
-        .transition(t)
-        .style("opacity", 0);
-      d3.select("#cat-labels")
-        .transition(t)
-        .style("opacity", 0);
-      d3.select("#state-view-group")
-        .transition(t)
-        .style("opacity", 1);
+    d3.select("#region-labels")
+      .transition(t)
+      .style("opacity", 0);
+    d3.select("#map-group")
+      .transition(t)
+      .style("opacity", 0);
+    d3.select("#color-guide-group")
+      .transition(t)
+      .style("opacity", 0);
+    d3.select("#cat-labels")
+      .transition(t)
+      .style("opacity", 0);
+    d3.select("#state-view-group")
+      .transition(t)
+      .style("opacity", 1);
+    d3.select("#metro-view-group")
+      .transition(t)
+      .style("opacity", 0);
 
-      pathconts.attr("transform", "translate(0, 0) scale(1)");
-    }
+    pathconts
+      .attr("transform", "translate(0, 0) scale(1)")
+      .style("fill-opacity", 0.6);
   },
   function step11() {
     t = d3
@@ -812,6 +801,10 @@ let steps = [
       .transition(t)
       .style("opacity", 0);
 
+    d3.select("#metro-view-group")
+      .transition(t)
+      .style("opacity", 1);
+
     d3.select("#map-group")
       .transition(t)
       .style("opacity", 1);
@@ -820,33 +813,150 @@ let steps = [
       .transition(t)
       .attr("transform", "translate(0, 0) scale(1)");
 
+    d3.select("#color-guide-group")
+      .transition(t)
+      .style("opacity", 1);
+
+    d3.select("#cat-labels")
+      .transition(t)
+      .style("opacity", 1);
+    d3.selectAll(".cat-lab1")
+      .transition(t)
+      .attr("x", 1000);
+    d3.selectAll(".cat-lab2")
+      .transition(t)
+      .attr("x", 1800);
+
     pathconts
       .transition(t)
       .attr("transform", d => {
         switch (d.metro) {
           case 2:
-            return "translate(100, 500) scale(0.3)";
+            return "translate(250, 280) scale(0.2)";
           case 3:
-            return "translate(1000, 500) scale(0.3)";
+            return "translate(250, 575) scale(0.2)";
           case 1:
-            return "translate(1000, 1200) scale(0.3)";
+            return "translate(250, 1277) scale(0.2)";
           default:
-            return "translate(100, 1200) scale(0.3)";
+            return "translate(250, 920) scale(0.2)";
         }
       })
-      .style("stroke-width", "0.5px");
+      .style("fill-opacity", 0.8)
+      .style("stroke-width", "1px");
+
+    sim.step = "metro";
+    sim
+      .alpha(0.3)
+      .restart()
+      .force(
+        "axis",
+        d3
+          .forceY(d => {
+            switch (d.metro) {
+              case 2:
+                return -1050;
+              case 3:
+                return -725;
+              case 1:
+                return -75;
+              default:
+                return -400;
+            }
+          })
+          .strength([0.3])
+      )
+      .force("py", null)
+      .force("px", null)
+      .force("box", null)
+      .force(
+        "positioning",
+        d3
+          .forceX(d => {
+            score = Math.min(
+              900,
+              Math.max(-100, 400 + 750 * (d["score_2017"] - 1))
+            );
+            return score;
+          })
+          .strength([1])
+      );
   }
 ];
 
 function createMetroElems() {
+  metroData = [
+    {
+      name: "Urban",
+      pp:
+        PUMAdata.filter(n => (n.metro == 2) & (n.score_2017 > 1)).length /
+        PUMAdata.filter(n => n.metro == 2).length,
+      np:
+        PUMAdata.filter(n => (n.metro == 2) & (n.score_2017 < 1)).length /
+        PUMAdata.filter(n => n.metro == 2).length
+    },
+    {
+      name: "Suburban",
+      pp:
+        PUMAdata.filter(n => (n.metro == 3) & (n.score_2017 > 1)).length /
+        PUMAdata.filter(n => n.metro == 3).length,
+      np:
+        PUMAdata.filter(n => (n.metro == 3) & (n.score_2017 < 1)).length /
+        PUMAdata.filter(n => n.metro == 3).length
+    },
+    {
+      name: "Mixed",
+      pp:
+        PUMAdata.filter(
+          n => ((n.metro == 0) | (n.metro == 4)) & (n.score_2017 > 1)
+        ).length / PUMAdata.filter(n => (n.metro == 0) | (n.metro == 4)).length,
+      np:
+        PUMAdata.filter(
+          n => ((n.metro == 0) | (n.metro == 4)) & (n.score_2017 < 1)
+        ).length / PUMAdata.filter(n => (n.metro == 0) | (n.metro == 4)).length
+    },
+    {
+      name: "Rural",
+      pp:
+        PUMAdata.filter(n => (n.metro == 1) & (n.score_2017 > 1)).length /
+        PUMAdata.filter(n => n.metro == 1).length,
+      np:
+        PUMAdata.filter(n => (n.metro == 1) & (n.score_2017 < 1)).length /
+        PUMAdata.filter(n => n.metro == 1).length
+    }
+  ];
   let container = d3.select("#metro-view-group");
-  for (let i = 0; i < 4; i++) {
-    container.append("rect")
-    .attr("x", i%2 * 1000)
-    .attr("y", 300 + Math.floor(i/2)*600)
-    .attr("width", 1000)
-    .attr("height", 600);
-  }
+
+  textData = container.selectAll(".metro-label").data(metroData);
+  textData
+    .enter()
+    .append("text")
+    .attr("class", "text metro-label")
+    .merge(textData)
+    .attr("x", 650)
+    .attr("y", (d, i) => 200 + i * 325)
+    .style("font-size", "45px")
+    .style("fill", "grey")
+    .text(d => d.name);
+  textData
+    .enter()
+    .append("text")
+    .attr("class", "text metro-label")
+    .merge(textData)
+    .attr("x", (d, i) => 1100)
+    .attr("y", (d, i) => 250 + i * 325)
+    .style("font-size", "30px")
+    .style("fill", "grey")
+    .text(d => truncateD(d.np * 100, 2) + "%");
+  textData
+    .enter()
+    .append("text")
+    .attr("class", "text metro-label")
+    .merge(textData)
+    .attr("x", (d, i) => 1700)
+    .attr("y", (d, i) => 250 + i * 325)
+    .style("font-size", "30px")
+    .style("fill", "grey")
+    .text(d => truncateD(d.pp * 100, 2) + "%");
 }
 
 function createStateData() {
@@ -1022,7 +1132,7 @@ function createStateElems() {
     .attr("y", 100)
     .style("font-size", "45px")
     .style("fill", "grey")
-    .text("Percentage by state of:");
+    .text("Share of [by state]:");
 
   lines = [
     [
